@@ -3,7 +3,7 @@ import omero
 from omero.rtypes import rlong
 
 
-def createTagAnnotationsLinks(conn, additions=[], removals=[]):
+def create_tag_annotations_links(conn, additions=[], removals=[]):
     """
     Links or unlinks existing Images with existing Tag annotations
 
@@ -11,31 +11,32 @@ def createTagAnnotationsLinks(conn, additions=[], removals=[]):
     @param additions:       List of tags to remove from images
     """
 
-    newLinks = []
+    new_links = []
     # Create a list of links to apply
     for addition in additions:
         link = omero.model.ImageAnnotationLinkI()
         link.parent = omero.model.ImageI(addition[0], False)
         link.child = omero.model.TagAnnotationI(addition[1], False)
-        newLinks.append(link)
+        new_links.append(link)
 
     # Apply the links
     failed = 0
-    savedLinks = []
+    saved_links = []
+    svc = conn.getUpdateService()
     try:
         # will fail if any of the links already exist
-        savedLinks = conn.getUpdateService().saveAndReturnArray(
-            newLinks, conn.SERVICE_OPTS
+        saved_links = svc.saveAndReturnArray(
+            new_links, conn.SERVICE_OPTS
         )
     except omero.ValidationException:
         # This will occur if the user has modified the tag landscape outside
         # of the auto-tagger while using the auto-tagger. Not likely to often
         # happen, but very possible.
 
-        for link in newLinks:
+        for link in new_links:
             try:
-                savedLinks.append(
-                    conn.getUpdateService().saveAndReturnObject(link, conn.SERVICE_OPTS)
+                saved_links.append(
+                    svc.saveAndReturnObject(link, conn.SERVICE_OPTS)
                 )
             except omero.ValidationException:
                 failed += 1
@@ -43,7 +44,7 @@ def createTagAnnotationsLinks(conn, additions=[], removals=[]):
     if len(removals) > 0:
         # Get existing links belonging to current user (all at once to save
         # on queries)
-        allImageIds, allTagIds = list(zip(*removals))
+        all_image_ids, all_tag_ids = list(zip(*removals))
 
         params = omero.sys.Parameters()
         params.theFilter = omero.sys.Filter()
@@ -52,8 +53,8 @@ def createTagAnnotationsLinks(conn, additions=[], removals=[]):
         # tags, otherwise we'd have to get them individually.
         links = conn.getAnnotationLinks(
             "Image",
-            parent_ids=list(allImageIds),
-            ann_ids=list(allTagIds),
+            parent_ids=list(all_image_ids),
+            ann_ids=list(all_tag_ids),
             params=params,
         )
 

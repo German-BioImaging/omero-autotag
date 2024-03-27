@@ -13,7 +13,7 @@ from omeroweb.webclient.decorators import login_required
 import omero
 from omero.rtypes import rstring, unwrap
 from omeroweb.webclient import tree
-from .utils import createTagAnnotationsLinks
+from .utils import create_tag_annotations_links
 
 logger = logging.getLogger(__name__)
 
@@ -30,19 +30,19 @@ def process_update(request, conn=None, **kwargs):
     removals = []
 
     for image in images:
-        image_id = image["imageId"]
+        iid = image["imageId"]
 
         additions.extend(
-            [(int(image_id), int(addition),) for addition in image["additions"]]
+            [(int(iid), int(addition),) for addition in image["additions"]]
         )
 
         removals.extend(
-            [(int(image_id), int(removal),) for removal in image["removals"]]
+            [(int(iid), int(removal),) for removal in image["removals"]]
         )
 
-    # TODO Interface for createTagAnnotationsLinks is a bit nasty, but go
+    # TODO Interface for create_tag_annotations_links is a bit nasty, but go
     # along with it for now
-    createTagAnnotationsLinks(conn, additions, removals)
+    create_tag_annotations_links(conn, additions, removals)
 
     return HttpResponse("")
 
