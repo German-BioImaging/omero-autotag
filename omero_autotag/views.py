@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from builtins import map, str
+from collections import defaultdict
 from copy import deepcopy
 import json
 import logging
@@ -107,13 +108,6 @@ def create_tag(request, conn=None, **kwargs):
     return JsonResponse(tag)
 
 
-def _marshal_image(conn, row, tags_on_images):
-    image = tree._marshal_image(conn, row[0:5])
-    image["clientPath"] = unwrap(row[5])
-    image["tags"] = tags_on_images.get(image["id"]) or []
-    return image
-
-
 @login_required(setGroupContext=True)
 def get_image_detail_and_tags(request, conn=None, **kwargs):
     # According to REST, this should be a GET, but because of the amount of
@@ -154,9 +148,9 @@ def get_image_detail_and_tags(request, conn=None, **kwargs):
         AND itlink.parent.id IN (:iids)
         """
 
-    tags_on_images = {}
+    tags_on_images = defaultdict(list)
     for e in qs.projection(q, params, service_opts):
-        tags_on_images.setdefault(unwrap(e[0]), []).append(unwrap(e[1]))
+        tags_on_images[unwrap(e[0])].append(unwrap(e[1]))
 
     # Get the images' details
     q = """
@@ -178,15 +172,11 @@ def get_image_detail_and_tags(request, conn=None, **kwargs):
 
     for e in qs.projection(q, params, service_opts):
         e = unwrap(e)[0]
-        d = [
-            e["id"],
-            e["name"],
-            e["ownerId"],
+        e["permsCss"] = tree.parse_permissions_css(
             e["image_details_permissions"],
-            e["filesetId"],
-            e["clientPath"],
-        ]
-        images.append(_marshal_image(conn, d, tags_on_images))
+            e["ownerId"], conn)
+        e["tags"] = tags_on_images.get(e["id"]) or []
+        images.append(e)
 
     # Get the users from this group for reference
     users = tree.marshal_experimenters(conn, group_id=group_id, page=None)
