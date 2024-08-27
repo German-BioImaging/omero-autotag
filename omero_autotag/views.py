@@ -76,7 +76,7 @@ def create_tag(request, conn=None, **kwargs):
 
     q = """
         select new map(tag.id as id,
-               tag.textValue as textValue,
+               tag.textValue as value,
                tag.description as description,
                tag.details.owner.id as ownerId,
                tag as tag_details_permissions,
@@ -92,20 +92,18 @@ def create_tag(request, conn=None, **kwargs):
     params.addLong("tid", tag.id)
 
     e = qs.projection(q, params, service_opts)[0]
-    e = unwrap(e)
-    e = [
-        e[0]["id"],
-        e[0]["textValue"],
-        e[0]["description"],
-        e[0]["ownerId"],
-        e[0]["tag_details_permissions"],
-        e[0]["ns"],
-        e[0]["childCount"],
-    ]
+    e = unwrap(e)[0]
+    e["permsCss"] = tree.parse_permissions_css(
+        e["tag_details_permissions"],
+        e["ownerId"], conn)
+    del e["tag_details_permissions"]
 
-    tag = tree._marshal_tag(conn, e)
+    e["set"] = (
+        e["ns"]
+        and tree.unwrap_to_str(e["ns"]) == omero.constants.metadata.NSINSIGHTTAGSET
+    )
 
-    return JsonResponse(tag)
+    return JsonResponse(e)
 
 
 @login_required(setGroupContext=True)
@@ -175,6 +173,7 @@ def get_image_detail_and_tags(request, conn=None, **kwargs):
         e["permsCss"] = tree.parse_permissions_css(
             e["image_details_permissions"],
             e["ownerId"], conn)
+        del e["image_details_permissions"]
         e["tags"] = tags_on_images.get(e["id"]) or []
         images.append(e)
 
