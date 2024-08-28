@@ -15,6 +15,7 @@ import omero
 from omero.rtypes import rstring, unwrap
 from omeroweb.webclient import tree
 from .utils import create_tag_annotations_links
+from omero.constants.metadata import NSINSIGHTTAGSET
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +101,7 @@ def create_tag(request, conn=None, **kwargs):
 
     e["set"] = (
         e["ns"]
-        and tree.unwrap_to_str(e["ns"]) == omero.constants.metadata.NSINSIGHTTAGSET
+        and tree.unwrap_to_str(e["ns"]) == NSINSIGHTTAGSET
     )
 
     return JsonResponse(e)
