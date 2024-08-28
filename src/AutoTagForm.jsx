@@ -65,19 +65,8 @@ export default class AutoTagForm extends React.Component {
       return false;
     }
 
-    // Reject tokens that are just numbers and/or symbols
-    if ( /^([0-9-\;\.\(\)]+)$/.test(tokenValue) ) {
-      return false;
-    }
-
-    // Accept any combination of letters, numbers and symbols
-    if ( /^([\s\-_A-Za-z0-9-\;\.\(\)]+)$/.test(tokenValue) ) {
-      return true;
-    }
-
-    // Reject anything else
-    return false;
-
+    // Accept anything else
+    return true;
   }
 
   addOrUpdateToken(image, tagValuesMap, tokenMap, value) {
