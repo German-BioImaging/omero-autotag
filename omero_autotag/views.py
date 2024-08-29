@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from builtins import map, str
+from collections import defaultdict
 from copy import deepcopy
 import json
 import logging
@@ -14,6 +15,7 @@ import omero
 from omero.rtypes import rstring, unwrap
 from omeroweb.webclient import tree
 from .utils import create_tag_annotations_links
+from omero.constants.metadata import NSINSIGHTTAGSET
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +77,7 @@ def create_tag(request, conn=None, **kwargs):
 
     q = """
         select new map(tag.id as id,
-               tag.textValue as textValue,
+               tag.textValue as value,
                tag.description as description,
                tag.details.owner.id as ownerId,
                tag as tag_details_permissions,
@@ -91,27 +93,18 @@ def create_tag(request, conn=None, **kwargs):
     params.addLong("tid", tag.id)
 
     e = qs.projection(q, params, service_opts)[0]
-    e = unwrap(e)
-    e = [
-        e[0]["id"],
-        e[0]["textValue"],
-        e[0]["description"],
-        e[0]["ownerId"],
-        e[0]["tag_details_permissions"],
-        e[0]["ns"],
-        e[0]["childCount"],
-    ]
+    e = unwrap(e)[0]
+    e["permsCss"] = tree.parse_permissions_css(
+        e["tag_details_permissions"],
+        e["ownerId"], conn)
+    del e["tag_details_permissions"]
 
-    tag = tree._marshal_tag(conn, e)
+    e["set"] = (
+        e["ns"]
+        and tree.unwrap_to_str(e["ns"]) == NSINSIGHTTAGSET
+    )
 
-    return JsonResponse(tag)
-
-
-def _marshal_image(conn, row, tags_on_images):
-    image = tree._marshal_image(conn, row[0:5])
-    image["clientPath"] = unwrap(row[5])
-    image["tags"] = tags_on_images.get(image["id"]) or []
-    return image
+    return JsonResponse(e)
 
 
 @login_required(setGroupContext=True)
@@ -154,9 +147,9 @@ def get_image_detail_and_tags(request, conn=None, **kwargs):
         AND itlink.parent.id IN (:iids)
         """
 
-    tags_on_images = {}
+    tags_on_images = defaultdict(list)
     for e in qs.projection(q, params, service_opts):
-        tags_on_images.setdefault(unwrap(e[0]), []).append(unwrap(e[1]))
+        tags_on_images[unwrap(e[0])].append(unwrap(e[1]))
 
     # Get the images' details
     q = """
@@ -178,15 +171,12 @@ def get_image_detail_and_tags(request, conn=None, **kwargs):
 
     for e in qs.projection(q, params, service_opts):
         e = unwrap(e)[0]
-        d = [
-            e["id"],
-            e["name"],
-            e["ownerId"],
+        e["permsCss"] = tree.parse_permissions_css(
             e["image_details_permissions"],
-            e["filesetId"],
-            e["clientPath"],
-        ]
-        images.append(_marshal_image(conn, d, tags_on_images))
+            e["ownerId"], conn)
+        del e["image_details_permissions"]
+        e["tags"] = tags_on_images.get(e["id"]) or []
+        images.append(e)
 
     # Get the users from this group for reference
     users = tree.marshal_experimenters(conn, group_id=group_id, page=None)
