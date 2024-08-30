@@ -11,6 +11,7 @@ export default class AutoTagToolbar extends React.Component {
     this.refreshForm = this.refreshForm.bind(this);
     this.toggleUnmapped = this.toggleUnmapped.bind(this);
     this.handleChangeRequiredTokenCardinality = this.handleChangeRequiredTokenCardinality.bind(this);
+    this.handleChangeSeparator = this.handleChangeSeparator.bind(this);
 
   }
 
@@ -25,6 +26,10 @@ export default class AutoTagToolbar extends React.Component {
 
   handleChangeRequiredTokenCardinality(e) {
     this.props.handleChangeRequiredTokenCardinality(e.target.value);
+  }
+
+  handleChangeSeparator(e) {
+    this.props.handleChangeSeparator(e.target.value);
   }
 
   render() {
@@ -74,6 +79,24 @@ export default class AutoTagToolbar extends React.Component {
         <ReactTooltip id={'tooltip-toolbar-slider'} place="bottom" type="dark" effect="float">
           Hide columns if token is found on fewer than this number of images
         </ReactTooltip>
+
+        <span
+          data-tip
+          data-for={'tooltip-toolbar-show-all'}
+          style={{fontSize: '12px', fontWeight: 'bold', lineHeight: '29px'}}
+        >
+          Split on&nbsp;
+        </span>
+
+        <ReactTooltip id={'tooltip-toolbar-show-all'} place="bottom" type="dark" effect="float">
+          Characters used to split the path and names to find relevant tags.
+        </ReactTooltip>
+
+        <input type="text"
+               size="10"
+               onChange={this.handleChangeSeparator}
+               value={this.props.separators}
+               />
 
         <span
           data-tip
