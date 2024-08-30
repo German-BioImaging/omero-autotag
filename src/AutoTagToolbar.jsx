@@ -93,10 +93,12 @@ export default class AutoTagToolbar extends React.Component {
         </ReactTooltip>
 
         <input type="text"
-               size="10"
+               size="5"
                onChange={this.handleChangeSeparator}
                value={this.props.separators}
-               />
+               style={{
+                marginRight: '20px'
+              }} />
 
         <span
           data-tip
@@ -112,7 +114,10 @@ export default class AutoTagToolbar extends React.Component {
 
         <input type="checkbox"
                checked={this.props.showUnmapped}
-               onChange={this.toggleUnmapped} />
+               onChange={this.toggleUnmapped}
+               style={{
+                marginRight: '20px'
+              }} />
 
         <input type="submit"
                id="applyButton"
