@@ -112,6 +112,10 @@ export default class AutoTagForm extends React.Component {
     tokens.forEach(value =>
       imageTokens.add(this.addOrUpdateToken(image, tagValuesMap, tokenMap, value))
     );
+    tokens = image.name.split(/[\/\\_\.\s\[\]]+/); // Splitting on brackets too
+    tokens.forEach(value =>
+      imageTokens.add(this.addOrUpdateToken(image, tagValuesMap, tokenMap, value))
+    );
 
     // Return the set of tokens that are present on this image
     return imageTokens;

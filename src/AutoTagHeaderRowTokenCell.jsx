@@ -93,7 +93,7 @@ export default class AutoTagHeaderRowTokenCell extends React.Component {
 
     return (
       <th>
-        <div className={'token'}>{token.value}
+        <div className={'token'}>{token.value}<br/>
           <input type="checkbox"
                  checked={this.isChecked()}
                  disabled={this.isDisabled()}
