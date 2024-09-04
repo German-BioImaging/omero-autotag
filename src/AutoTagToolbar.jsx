@@ -11,6 +11,7 @@ export default class AutoTagToolbar extends React.Component {
     this.refreshForm = this.refreshForm.bind(this);
     this.toggleUnmapped = this.toggleUnmapped.bind(this);
     this.handleChangeRequiredTokenCardinality = this.handleChangeRequiredTokenCardinality.bind(this);
+    this.handleChangeSeparator = this.handleChangeSeparator.bind(this);
 
   }
 
@@ -25,6 +26,10 @@ export default class AutoTagToolbar extends React.Component {
 
   handleChangeRequiredTokenCardinality(e) {
     this.props.handleChangeRequiredTokenCardinality(e.target.value);
+  }
+
+  handleChangeSeparator(e) {
+    this.props.handleChangeSeparator(e.target.value);
   }
 
   render() {
@@ -80,6 +85,26 @@ export default class AutoTagToolbar extends React.Component {
           data-for={'tooltip-toolbar-show-all'}
           style={{fontSize: '12px', fontWeight: 'bold', lineHeight: '29px'}}
         >
+          Split on&nbsp;
+        </span>
+
+        <ReactTooltip id={'tooltip-toolbar-show-all'} place="bottom" type="dark" effect="float">
+          Characters used to split the path and names to find relevant tags.
+        </ReactTooltip>
+
+        <input type="text"
+               size="5"
+               onChange={this.handleChangeSeparator}
+               value={this.props.separators}
+               style={{
+                marginRight: '20px'
+              }} />
+
+        <span
+          data-tip
+          data-for={'tooltip-toolbar-show-all'}
+          style={{fontSize: '12px', fontWeight: 'bold', lineHeight: '29px'}}
+        >
           Show All Potential Tags
         </span>
 
@@ -89,7 +114,10 @@ export default class AutoTagToolbar extends React.Component {
 
         <input type="checkbox"
                checked={this.props.showUnmapped}
-               onChange={this.toggleUnmapped} />
+               onChange={this.toggleUnmapped}
+               style={{
+                marginRight: '20px'
+              }} />
 
         <input type="submit"
                id="applyButton"

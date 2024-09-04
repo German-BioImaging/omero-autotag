@@ -27,7 +27,9 @@ export default class AutoTagForm extends React.Component {
       unmappedTags: new Set(),
       showUnmapped: false,
       requiredTokenCardinality: 2,
-      maxTokenCardinality: 2
+      maxTokenCardinality: 2,
+      separators: " _./\\[]",
+      tagValuesMap: new Map()
     }
 
     // Abort capable AJAX variables
@@ -43,6 +45,7 @@ export default class AutoTagForm extends React.Component {
     this.refreshForm = this.refreshForm.bind(this);
     this.toggleUnmapped = this.toggleUnmapped.bind(this);
     this.handleChangeRequiredTokenCardinality = this.handleChangeRequiredTokenCardinality.bind(this);
+    this.handleChangeSeparator = this.handleChangeSeparator.bind(this);
 
   }
 
@@ -54,22 +57,16 @@ export default class AutoTagForm extends React.Component {
       tokenMap: new Map(),
       unmappedTags: new Set(),
       requiredTokenCardinality: 2,
-      maxTokenCardinality: 2
+      maxTokenCardinality: 2,
     });
   }
 
   tokenValueCheck (tokenValue) {
-
     // Reject empty tokens
-    if (tokenValue.length === 0) {
-      return false;
-    }
-
-    // Accept anything else
-    return true;
+    return tokenValue.length > 0
   }
 
-  addOrUpdateToken(image, tagValuesMap, tokenMap, value) {
+  addOrUpdateToken(tagValuesMap, tokenMap, value) {
 
     let token;
 
@@ -106,16 +103,25 @@ export default class AutoTagForm extends React.Component {
 
   tokensInName(image, tagValuesMap, tokenMap) {
 
-    let imageTokens = new Set();
+    // escape special characters
+    const escapedString = this.state.separators.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regexPattern = RegExp(`[${escapedString}]+`);
 
-    let tokens = image.clientPath.split(/[\/\\_\.\s]+/);
-    tokens.forEach(value =>
-      imageTokens.add(this.addOrUpdateToken(image, tagValuesMap, tokenMap, value))
+
+    const allTokens = new Set();
+    // Split and add tokens from image.clientPath
+    image.clientPath.split(regexPattern).forEach(value => allTokens.add(value));
+    // Split and add tokens from image.name
+    image.name.split(regexPattern).forEach(value => allTokens.add(value));
+
+    // Process each unique token
+    let imageTokens = new Set();
+    allTokens.forEach(value =>
+      imageTokens.add(this.addOrUpdateToken(tagValuesMap, tokenMap, value))
     );
 
     // Return the set of tokens that are present on this image
     return imageTokens;
-
   }
 
   loadFromServer(imageIds) {
@@ -190,30 +196,17 @@ export default class AutoTagForm extends React.Component {
 
         });
 
-        // Set of all tags which are used in at least one image, irrespective of
-        // whether there is a token mapping using it or possible using it
-        let allAppliedTags = new Set();
-
-        // The possible mapping of tokens to tags
-        // The active mapping
-        // Counts of token use
-        let tokenMap = new Map();
-
+        // Generate the image objects
         let images = new Set();
-
-        // Process the images
         jsonData.images.forEach(jsonImage => {
-
           // Resolve the owner ID to a user
           let imageOwner = users.get(jsonImage.ownerId);
-
           // Get the tags that correspond to these tagIds
           let imageTags = new Set(
             jsonImage.tags.map(
               jsonTagId => tags.get(jsonTagId)
             )
           );
-
           // Add the image to the set
           let image = new Image(
             jsonImage.id,
@@ -224,65 +217,12 @@ export default class AutoTagForm extends React.Component {
             imageTags
           );
           images.add(image);
-
-
-          // Find the tokens on each image, updating the tokenMap in place
-          image.tokens = this.tokensInName(image, tagValuesMap, tokenMap);
-
-          // Check any tokens that exist on this image by default
-          image.checkedTokens = new Set(image.tokens);
-
-          // Add any tags found on this image to this definitive set of used
-          // tags
-          allAppliedTags = union(allAppliedTags, image.tags);
-
         });
 
-        // Process the images again now that the token->tag map is complete as
-        // the image may have tags applied for token->tag mappings where it
-        // does not have the token. These should also be marked as checked
-        // automatically
-
-        // Get the reverse mapping of the tags to tokens. This is only possible
-        // because there should be a 1:1 mapping between tokens and tags
-        let activeTagTokenMap = new Map([...tokenMap].filter(
-          kv => kv[1].isActive()
-        ).map(
-          kv => [kv[1].activeTag, kv[1]]
-        ));
-
-        // Also get the activeTagTokenMap as a Set for set operations
-        let activeTagSet = new Set(activeTagTokenMap.keys());
-
-        // Find the tags which are mapped in some way
-        let mappedTags = new Set();
-        tokenMap.forEach(token => {
-          mappedTags = union(mappedTags, token.possible);
-        });
-
-        // Find the tags that are not applied in any way
-        let unmappedTags = difference(allAppliedTags, mappedTags);
-
-
-        // Check tokens due to applied tags for auto-mappings and
-        // Check tags due to applied tags where there are no mappings
-        images.forEach(image => {
-
-          // Get the set of tags on this image that are currently mapped
-          let appliedImageTags = intersection(activeTagSet, image.tags);
-
-          // Lookup the tokens which those tags are mapped to and mark them
-          // as checked
-          appliedImageTags.forEach(tag => {
-            let token = activeTagTokenMap.get(tag);
-            image.checkToken(token);
-          });
-
-          // Get the set of tags that are on the image, but not involved in
-          // any mapping. Apply this to checkedTags
-          image.checkedTags = intersection(image.tags, unmappedTags);
-
-        });
+        const res = this.initialize_image_tokens(images, tagValuesMap);
+        images = res[0];
+        let tokenMap = res[1];
+        let unmappedTags = res[2];;
 
         // Set the state
         // Special case requiredTokenCardinality for when there is only one image
@@ -293,16 +233,85 @@ export default class AutoTagForm extends React.Component {
           tokenMap: tokenMap,
           unmappedTags: unmappedTags,
           requiredTokenCardinality: images.size === 1 ? 1 : 2,
-          maxTokenCardinality: images.size
+          maxTokenCardinality: images.size,
+          tagValuesMap: tagValuesMap
         });
 
       }
     );
+  }
 
-    //   error: function(xhr, status, err) {
-    //     console.error(this.props.url, status, err.toString());
-    //   }.bind(this)
-    // });
+  initialize_image_tokens(images, tagValuesMap) {
+    // Separate initialize token function to refresh the tokens
+    // each time separators are changed, without sending query to the server
+
+    // Set of all tags which are used in at least one image, irrespective of
+    // whether there is a token mapping using it or possible using it
+    let allAppliedTags = new Set();
+
+    // The possible mapping of tokens to tags
+    // The active mapping
+    // Counts of token use
+    let tokenMap = new Map();
+
+    // Process the images
+    images.forEach(image => {
+      // Find the tokens on each image, updating the tokenMap in place
+      image.tokens = this.tokensInName(image, tagValuesMap, tokenMap);
+
+      // Check any tokens that exist on this image by default
+      image.checkedTokens = new Set(image.tokens);
+
+      // Add any tags found on this image to this definitive set of used tags
+      allAppliedTags = union(allAppliedTags, image.tags);
+    });
+
+    // Process the images again now that the token->tag map is complete as
+    // the image may have tags applied for token->tag mappings where it
+    // does not have the token. These should also be marked as checked
+    // automatically
+
+    // Get the reverse mapping of the tags to tokens. This is only possible
+    // because there should be a 1:1 mapping between tokens and tags
+    let activeTagTokenMap = new Map([...tokenMap].filter(
+      kv => kv[1].isActive()
+    ).map(
+      kv => [kv[1].activeTag, kv[1]]
+    ));
+
+    // Also get the activeTagTokenMap as a Set for set operations
+    let activeTagSet = new Set(activeTagTokenMap.keys());
+
+    // Find the tags which are mapped in some way
+    let mappedTags = new Set();
+    tokenMap.forEach(token => {
+      mappedTags = union(mappedTags, token.possible);
+    });
+
+    // Find the tags that are not applied in any way
+    let unmappedTags = difference(allAppliedTags, mappedTags);
+
+
+    // Check tokens due to applied tags for auto-mappings and
+    // Check tags due to applied tags where there are no mappings
+    images.forEach(image => {
+
+      // Get the set of tags on this image that are currently mapped
+      let appliedImageTags = intersection(activeTagSet, image.tags);
+
+      // Lookup the tokens which those tags are mapped to and mark them
+      // as checked
+      appliedImageTags.forEach(tag => {
+        let token = activeTagTokenMap.get(tag);
+        image.checkToken(token);
+      });
+
+      // Get the set of tags that are on the image, but not involved in
+      // any mapping. Apply this to checkedTags
+      image.checkedTags = intersection(image.tags, unmappedTags);
+
+    });
+    return [images, tokenMap, unmappedTags];
   }
 
   componentDidMount() {
@@ -656,15 +665,39 @@ export default class AutoTagForm extends React.Component {
     });
   }
 
+  handleChangeSeparator(value) {
+    // Do not use setState here yet (would already refresh the page)
+    this.state.separators = value;
+
+    let images = this.state.images;
+    let tagValuesMap = this.state.tagValuesMap;
+    tokenMap, unmappedTags;
+
+    // Recompute the image tokens
+    const res = this.initialize_image_tokens(images, tagValuesMap);
+    images = res[0];
+    let tokenMap = res[1];
+    let unmappedTags = res[2];
+
+    // Set the state
+    // Special case requiredTokenCardinality for when there is only one image
+    this.setState({
+      images: images,
+      tokenMap: tokenMap,
+      unmappedTags: unmappedTags
+    });
+
+  }
+
   filteredTokenMap() {
     // Filter out any tokens that do not meet the requirements
     // Requirements for inclusion:
     // 1) Matches an existing tag value
-    // 2) Is present on required number of images AND Is not numbers and/or symbols only
+    // 2) Is present on required number of images
     let tokenMap = new Map([...this.state.tokenMap].filter(kv => {
       let token = kv[1];
-
       return (
+
         token.possible.size > 0 ||
         (
           token.count >= this.state.requiredTokenCardinality &&
@@ -686,6 +719,8 @@ export default class AutoTagForm extends React.Component {
                         handleChangeRequiredTokenCardinality={this.handleChangeRequiredTokenCardinality}
                         toggleUnmapped={this.toggleUnmapped}
                         refreshForm={this.refreshForm}
+                        separators={this.state.separators}
+                        handleChangeSeparator={this.handleChangeSeparator}
         />
 
         <AutoTagTable tokenMap={this.filteredTokenMap()}
