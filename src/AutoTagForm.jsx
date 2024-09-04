@@ -107,21 +107,21 @@ export default class AutoTagForm extends React.Component {
     const escapedString = this.state.separators.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     const regexPattern = RegExp(`[${escapedString}]+`);
 
+
+    const allTokens = new Set();
+    // Split and add tokens from image.clientPath
+    image.clientPath.split(regexPattern).forEach(value => allTokens.add(value));
+    // Split and add tokens from image.name
+    image.name.split(regexPattern).forEach(value => allTokens.add(value));
+
+    // Process each unique token
     let imageTokens = new Set();
-
-    let tokens = image.clientPath.split(regexPattern);
-    tokens.forEach(value =>
-      imageTokens.add(this.addOrUpdateToken(tagValuesMap, tokenMap, value))
-    );
-
-    tokens = image.name.split(regexPattern); // Splitting on brackets too
-    tokens.forEach(value =>
+    allTokens.forEach(value =>
       imageTokens.add(this.addOrUpdateToken(tagValuesMap, tokenMap, value))
     );
 
     // Return the set of tokens that are present on this image
     return imageTokens;
-
   }
 
   loadFromServer(imageIds) {
@@ -258,7 +258,6 @@ export default class AutoTagForm extends React.Component {
     images.forEach(image => {
       // Find the tokens on each image, updating the tokenMap in place
       image.tokens = this.tokensInName(image, tagValuesMap, tokenMap);
-      console.log(image.tokens);
 
       // Check any tokens that exist on this image by default
       image.checkedTokens = new Set(image.tokens);
@@ -694,11 +693,11 @@ export default class AutoTagForm extends React.Component {
     // Filter out any tokens that do not meet the requirements
     // Requirements for inclusion:
     // 1) Matches an existing tag value
-    // 2) Is present on required number of images AND Is not numbers and/or symbols only
+    // 2) Is present on required number of images
     let tokenMap = new Map([...this.state.tokenMap].filter(kv => {
       let token = kv[1];
-
       return (
+
         token.possible.size > 0 ||
         (
           token.count >= this.state.requiredTokenCardinality &&
