@@ -62,17 +62,11 @@ export default class AutoTagForm extends React.Component {
   }
 
   tokenValueCheck (tokenValue) {
-
     // Reject empty tokens
-    if (tokenValue.length === 0) {
-      return false;
-    }
-
-    // Accept anything else
-    return true;
+    return tokenValue.length > 0
   }
 
-  addOrUpdateToken(image, tagValuesMap, tokenMap, value) {
+  addOrUpdateToken(tagValuesMap, tokenMap, value) {
 
     let token;
 
@@ -117,12 +111,12 @@ export default class AutoTagForm extends React.Component {
 
     let tokens = image.clientPath.split(regexPattern);
     tokens.forEach(value =>
-      imageTokens.add(this.addOrUpdateToken(image, tagValuesMap, tokenMap, value))
+      imageTokens.add(this.addOrUpdateToken(tagValuesMap, tokenMap, value))
     );
 
     tokens = image.name.split(regexPattern); // Splitting on brackets too
     tokens.forEach(value =>
-      imageTokens.add(this.addOrUpdateToken(image, tagValuesMap, tokenMap, value))
+      imageTokens.add(this.addOrUpdateToken(tagValuesMap, tokenMap, value))
     );
 
     // Return the set of tokens that are present on this image
