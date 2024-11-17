@@ -26,25 +26,27 @@ def process_update(request, conn=None, **kwargs):
     if not request.POST:
         return HttpResponseNotAllowed("Methods allowed: POST")
 
-    images = json.loads(request.body)
+    images = json.loads(request.POST.get("change"))
+
+    dataType = request.POST.get("dataType").capitalize()
 
     additions = []
     removals = []
 
     for image in images:
-        iid = image["imageId"]
+        oid = image["imageId"]
 
         additions.extend(
-            [(int(iid), int(addition),) for addition in image["additions"]]
+            [(int(oid), int(addition),) for addition in image["additions"]]
         )
 
         removals.extend(
-            [(int(iid), int(removal),) for removal in image["removals"]]
+            [(int(oid), int(removal),) for removal in image["removals"]]
         )
 
     # TODO Interface for create_tag_annotations_links is a bit nasty, but go
     # along with it for now
-    create_tag_annotations_links(conn, additions, removals)
+    create_tag_annotations_links(conn, dataType, additions, removals)
 
     return HttpResponse("")
 
@@ -108,18 +110,76 @@ def create_tag(request, conn=None, **kwargs):
 
 
 @login_required(setGroupContext=True)
-def get_image_detail_and_tags(request, conn=None, **kwargs):
+def get_object_ids(request, conn=None, **kwargs):
     # According to REST, this should be a GET, but because of the amount of
     # data being submitted, this is problematic
     if not request.POST:
         return HttpResponseNotAllowed("Methods allowed: POST")
 
-    image_ids = request.POST.getlist("imageIds[]")
+    obj_ids = request.POST.getlist("ids[]")
+    parentType = request.POST.get("parentType")
 
-    if not image_ids:
+    params = omero.sys.ParametersI()
+    params.addLongs("pids", obj_ids)
+
+    group_id = request.session.get("active_group")
+    if group_id is None:
+        group_id = conn.getEventContext().groupId
+    service_opts = deepcopy(conn.SERVICE_OPTS)
+    service_opts.setOmeroGroup(group_id)
+
+    qs = conn.getQueryService()
+
+    res = {}
+    if parentType == "orphaned":
+        res["image"] = []
+    elif parentType == "tag":
+        res["image"] = []
+        res["dataset"] = []
+        res["project"] = []
+        res["screen"] = []
+        res["plate"] = []
+        res["run"] = []
+        res["well"] = []
+    elif parentType == "project":
+        res["dataset"] = []
+    elif parentType == "dataset":
+        q = """
+        SELECT i.id FROM Dataset d
+        JOIN d.imageLinks il
+        JOIN il.child i
+        WHERE d.id IN (:pids)
+        """
+        res["image"] = []
+        for e in qs.projection(q, params, service_opts):
+            res["image"].append(unwrap(e[0]))
+
+    elif parentType == "screen":
+        res["plate"] = []
+    elif parentType == "plate":
+        res["image"] = []
+        res["well"] = []
+        res["run"] = []
+    elif parentType == "acquisition":
+        res["image"] = []
+
+    return JsonResponse(res)
+
+
+@login_required(setGroupContext=True)
+def get_objects(request, conn=None, **kwargs):
+    # According to REST, this should be a GET, but because of the amount of
+    # data being submitted, this is problematic
+    if not request.POST:
+        return HttpResponseNotAllowed("Methods allowed: POST")
+
+    obj_ids = request.POST.getlist("ids[]")
+    dataType = request.POST.get("dataType").capitalize()
+
+    if not obj_ids:
         return HttpResponseBadRequest("Image IDs required")
 
-    image_ids = list(map(int, image_ids))
+    obj_ids = list(map(int, obj_ids))
 
     group_id = request.session.get("active_group")
     if group_id is None:
@@ -135,50 +195,64 @@ def get_image_detail_and_tags(request, conn=None, **kwargs):
     # Set the desired group context
     service_opts.setOmeroGroup(group_id)
 
-    params.addLongs("iids", image_ids)
+    params.addLongs("oids", obj_ids)
 
     qs = conn.getQueryService()
 
     # Get the tags that are applied to individual images
-    q = """
+    q = f"""
         SELECT DISTINCT itlink.parent.id, itlink.child.id
-        FROM ImageAnnotationLink itlink
+        FROM {dataType}AnnotationLink itlink
         WHERE itlink.child.class=TagAnnotation
-        AND itlink.parent.id IN (:iids)
+        AND itlink.parent.id IN (:oids)
         """
 
     tags_on_images = defaultdict(list)
     for e in qs.projection(q, params, service_opts):
         tags_on_images[unwrap(e[0])].append(unwrap(e[1]))
 
+    if dataType == "Image":
     # Get the images' details
-    q = """
-        SELECT new map(image.id AS id,
-               image.name AS name,
-               image.details.owner.id AS ownerId,
-               image AS image_details_permissions,
-               image.fileset.id AS filesetId,
-               filesetentry.clientPath AS clientPath)
-        FROM Image image
-        JOIN image.fileset fileset
-        JOIN fileset.usedFiles filesetentry
-        WHERE index(filesetentry) = 0
-        AND image.id IN (:iids)
-        ORDER BY lower(image.name), image.id
-        """
+        q = """
+            SELECT new map(image.id AS id,
+                image.name AS name,
+                image.details.owner.id AS ownerId,
+                image AS image_details_permissions,
+                image.fileset.id AS filesetId,
+                filesetentry.clientPath AS clientPath)
+            FROM Image image
+            JOIN image.fileset fileset
+            JOIN fileset.usedFiles filesetentry
+            WHERE index(filesetentry) = 0
+            AND image.id IN (:oids)
+            ORDER BY lower(image.name), image.id
+            """
+    else:
+        q = f"""
+            SELECT new map(o.id AS id,
+                o.name AS name,
+                o.details.owner.id AS ownerId,
+                o AS {dataType.lower()}_details_permissions)
+            FROM {dataType} o
+            WHERE o.id IN (:oids)
+            ORDER BY lower(o.name), o.id
+            """
 
-    images = []
+    result_obj = []
 
     for e in qs.projection(q, params, service_opts):
         e = unwrap(e)[0]
         e["permsCss"] = tree.parse_permissions_css(
-            e["image_details_permissions"],
+            e[f"{dataType.lower()}_details_permissions"],
             e["ownerId"], conn)
-        del e["image_details_permissions"]
+        del e[f"{dataType.lower()}_details_permissions"]
         e["tags"] = tags_on_images.get(e["id"]) or []
-        images.append(e)
+        if dataType != "Image":
+            e["filesetId"] = "-1"
+            e["clientPath"] = ""
+        result_obj.append(e)
 
     # Get the users from this group for reference
     users = tree.marshal_experimenters(conn, group_id=group_id, page=None)
 
-    return JsonResponse({"tags": tags, "images": images, "users": users})
+    return JsonResponse({"tags": tags, "images": result_obj, "users": users})

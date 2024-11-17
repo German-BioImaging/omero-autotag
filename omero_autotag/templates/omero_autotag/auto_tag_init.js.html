@@ -4,21 +4,10 @@
 
 $(function() {
   var pluginIndex = {{ forloop.counter }};
-  var url="{% url 'webtagging_get_image_detail_and_tags' %}";
-  var urlUpdate="{% url 'webtagging_process_update' %}";
-  var urlCreateTag="{% url 'webtagging_create_tag' %}";
-
-
-  var reactRender = function(datatree, selectedNode) {
-    var imageIds = [];
-
-    $.each(selectedNode.children, function(index, child) {
-      imageIds.push(datatree.get_node(child).data.obj.id);
-    });
-
-    autotagform.default(imageIds, url, urlUpdate, urlCreateTag);
-
-  };
+  var url="{% url 'autotag_get_objects' %}";
+  var urlIds="{% url 'autotag_get_object_ids' %}";
+  var urlUpdate="{% url 'autotag_process_update' %}";
+  var urlCreateTag="{% url 'autotag_create_tag' %}";
 
   $("#auto_tag_panel").omeroweb_center_plugin({
     plugin_index: pluginIndex,        // From the Django template loop
@@ -40,30 +29,24 @@ $(function() {
         return;
       }
 
-      // TODO Handle multi-selection
-      var selected = tree_selected[0];
-
-      // If the selected object is an image, return that image and its siblings
-      if (selected.type === 'image') {
-        // Set selected to be the parent so that lastSelected can be compared
-        // to the container
-        selected = datatree.get_node(datatree.get_parent(selected));
-        reactRender(datatree, selected);
-      }
-
-      // If the selected object is a Dataset, tag or orphaned return its children
-      else if (selected.type === 'dataset' || selected.type === 'orphaned' || selected.type === 'tag'){
-        // Make sure that the dataset is loaded
-        if (!datatree.is_loaded(selected)) {
-          datatree.load_node(selected, function(node, status){
-            reactRender(datatree, datatree.get_node(node));
-          });
-        } else {
-          reactRender(datatree, datatree.get_node(selected));
+      all_ids = [];
+      dataType = tree_selected[0].type;
+      tree_selected.forEach(function(selected){
+        if (selected.type === 'image') {
+          selected = datatree.get_node(datatree.get_parent(selected));
+          dataType = "dataset"
         }
-      }
+        if (selected.type != 'orphaned') {
+          all_ids.push(selected.data.obj.id)
+        }
+      });
+      console.log(all_ids);
+      autotagform.default(all_ids, dataType, url, urlIds, urlUpdate, urlCreateTag);
     },
-    supported_obj_types: ['dataset', 'image', 'orphaned', 'tag']
+    supported_obj_types: [
+      'dataset', 'image', 'orphaned', 'tag',
+      'project', "screen", "acquisition", "plate"
+    ]
   });
 });
 

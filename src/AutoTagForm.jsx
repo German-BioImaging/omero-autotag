@@ -124,7 +124,7 @@ export default class AutoTagForm extends React.Component {
     return imageTokens;
   }
 
-  loadFromServer(imageIds) {
+  loadFromServer(imageIds, dataType) {
 
     // If there is a request in progress, abort it in favour of this one
     if (this.loadRequest && this.loadRequest.readyState !== 4) {
@@ -141,7 +141,10 @@ export default class AutoTagForm extends React.Component {
     this.loadRequest = $.ajax({
       url: this.props.url,
       type: "POST",
-      data: { imageIds: imageIds },
+      data: {
+        ids: imageIds,
+        dataType: dataType
+      },
       dataType: 'json',
       cache: false
     });
@@ -315,13 +318,13 @@ export default class AutoTagForm extends React.Component {
   }
 
   componentDidMount() {
-    this.loadFromServer(this.props.imageIds);
+    this.loadFromServer(this.props.imageIds, this.props.dataType);
   }
 
   componentWillReceiveProps(nextProps) {
     // If the sizes are not the same we should definitely reload
     if (nextProps.imageIds.size !== this.props.imageIds.size) {
-      this.loadFromServer(nextProps.imageIds);
+      this.loadFromServer(nextProps.imageIds, nextProps.dataType);
       // Bail out as a reload was required and done
       return;
     }
@@ -331,7 +334,7 @@ export default class AutoTagForm extends React.Component {
       difference(new Set(nextProps.imageIds), new Set(this.props.imageIds)).size > 0 ||
       difference(new Set(this.props.imageIds), new Set(nextProps.imageIds)).size > 0
     ) {
-      this.loadFromServer(nextProps.imageIds);
+      this.loadFromServer(nextProps.imageIds, nextProps.dataType);
       // Bail out as a reload was required and done
       return;
     }
@@ -438,7 +441,10 @@ export default class AutoTagForm extends React.Component {
     $.ajax({
       url: this.props.urlUpdate,
       type: "POST",
-      data: JSON.stringify(changes),
+      data: {
+        change: JSON.stringify(changes),
+        dataType: this.props.dataType
+      },
       success: function(data) {
         // No action required
       }.bind(this),
@@ -650,7 +656,7 @@ export default class AutoTagForm extends React.Component {
   }
 
   refreshForm() {
-    this.loadFromServer(this.props.imageIds);
+    this.loadFromServer(this.props.imageIds, this.props.dataType);
   }
 
   toggleUnmapped() {
