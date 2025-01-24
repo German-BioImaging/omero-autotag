@@ -1,6 +1,6 @@
 {
   "name": "webtagging-autotag",
-  "version": "4.0.1",
+  "version": "4.1.0",
   "description": "",
   "main": "bundle.js",
   "scripts": {
@@ -8,6 +8,9 @@
     "build": "./node_modules/webpack/bin/webpack.js --progress"
   },
   "author": "Douglas P.W. Russell",
+  "contributors": [
+    "Tom Boissonnet"
+  ],
   "license": "MIT",
   "devDependencies": {
     "babel-core": "^6.4.5",
