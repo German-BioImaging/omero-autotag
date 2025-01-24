@@ -10,7 +10,7 @@
   "author": "Douglas P.W. Russell",
   "contributors": [
     "Tom Boissonnet"
-  ]
+  ],
   "license": "MIT",
   "devDependencies": {
     "babel-core": "^6.4.5",
