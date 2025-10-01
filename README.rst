@@ -116,10 +116,10 @@ configure the autotag settings the same as above.
 Project Maintenance
 ===================
 
-I (Douglas) am no longer actively developing
-OMERO.webtagging. I am thrilled to hand over
+Douglas is no longer actively developing
+OMERO.webtagging and handed over
 maintainence and development to
-`German Bioimaging <https://gerbi-gmb.de/i3dbio/i3dbio-about/>`_.
+`German Bioimaging <https://gerbi-gmb.de/i3dbio/i3dbio-about/>`_ in September 2023.
 
 Acknowledgements
 ================
