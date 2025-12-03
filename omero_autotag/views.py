@@ -10,6 +10,8 @@ from django.http import (
     HttpResponseBadRequest,
     JsonResponse,
 )
+from django.conf import settings
+
 from omeroweb.webclient.decorators import login_required
 import omero
 from omero.rtypes import rstring, unwrap
@@ -126,7 +128,14 @@ def get_image_detail_and_tags(request, conn=None, **kwargs):
         group_id = conn.getEventContext().groupId
 
     # All the tags available to the user
-    tags = tree.marshal_tags(conn, group_id=group_id)
+    tags = []
+    page = 0
+    while True:
+        next_tags = tree.marshal_tags(conn, group_id=group_id, page=page)
+        tags.extend(next_tags)
+        if len(next_tags) < settings.PAGE:
+            break
+        page += 1
 
     # Details about the images specified
     params = omero.sys.ParametersI()
