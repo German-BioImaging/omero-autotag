@@ -3,9 +3,9 @@ from . import views
 
 urlpatterns = [
     re_path(
-        r"^get_objects/$",
-        views.get_objects,
-        name="autotag_get_objects",
+        r"^get_items/$",
+        views.get_items,
+        name="autotag_get_items",
     ),
     # process main form submission
     re_path(

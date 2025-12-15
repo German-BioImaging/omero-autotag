@@ -20,7 +20,7 @@ export default class AutoTagForm extends React.Component {
     super();
 
     this.state = {
-      images: new Set(),
+      items: new Set(),
       users: new Map(),
       tags: new Map(),
       tokenMap: new Map(),
@@ -51,7 +51,7 @@ export default class AutoTagForm extends React.Component {
 
   setEmptyState() {
     this.setState({
-      images: new Set(),
+      items: new Set(),
       users: new Map(),
       tags: new Map(),
       tokenMap: new Map(),
@@ -101,7 +101,7 @@ export default class AutoTagForm extends React.Component {
 
   }
 
-  tokensInName(image, tagValuesMap, tokenMap) {
+  tokensInName(item, tagValuesMap, tokenMap) {
 
     // escape special characters
     const escapedString = this.state.separators.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -109,22 +109,22 @@ export default class AutoTagForm extends React.Component {
 
 
     const allTokens = new Set();
-    // Split and add tokens from image.clientPath
-    image.clientPath.split(regexPattern).forEach(value => allTokens.add(value));
-    // Split and add tokens from image.name
-    image.name.split(regexPattern).forEach(value => allTokens.add(value));
+    // Split and add tokens from item.clientPath (for images)
+    item.clientPath.split(regexPattern).forEach(value => allTokens.add(value));
+    // Split and add tokens from item.name
+    item.name.split(regexPattern).forEach(value => allTokens.add(value));
 
     // Process each unique token
-    let imageTokens = new Set();
+    let itemTokens = new Set();
     allTokens.forEach(value =>
-      imageTokens.add(this.addOrUpdateToken(tagValuesMap, tokenMap, value))
+      itemTokens.add(this.addOrUpdateToken(tagValuesMap, tokenMap, value))
     );
 
-    // Return the set of tokens that are present on this image
-    return imageTokens;
+    // Return the set of tokens that are present on this item
+    return itemTokens;
   }
 
-  loadFromServer(imageIds) {
+  loadFromServer(itemIds, dataType) {
 
     // If there is a request in progress, abort it in favour of this one
     if (this.loadRequest && this.loadRequest.readyState !== 4) {
@@ -132,7 +132,7 @@ export default class AutoTagForm extends React.Component {
     }
 
     // If there is nothing to display, just reset to default state
-    if (imageIds.length === 0) {
+    if (itemIds.length === 0) {
       this.setEmptyState();
       // And bail
       return;
@@ -141,7 +141,10 @@ export default class AutoTagForm extends React.Component {
     this.loadRequest = $.ajax({
       url: this.props.url,
       type: "POST",
-      data: { imageIds: imageIds },
+      data: {
+        ids: itemIds,
+        dataType: dataType
+      },
       dataType: 'json',
       cache: false
     });
@@ -196,44 +199,44 @@ export default class AutoTagForm extends React.Component {
 
         });
 
-        // Generate the image objects
-        let images = new Set();
-        jsonData.images.forEach(jsonImage => {
+        // Generate the items
+        let items = new Set();
+        jsonData.items.forEach(jsonItem => {
           // Resolve the owner ID to a user
-          let imageOwner = users.get(jsonImage.ownerId);
+          let itemOwner = users.get(jsonItem.ownerId);
           // Get the tags that correspond to these tagIds
-          let imageTags = new Set(
-            jsonImage.tags.map(
+          let itemTags = new Set(
+            jsonItem.tags.map(
               jsonTagId => tags.get(jsonTagId)
             )
           );
-          // Add the image to the set
-          let image = new Image(
-            jsonImage.id,
-            jsonImage.name,
-            imageOwner,
-            jsonImage.permsCss,
-            jsonImage.clientPath,
-            imageTags
+          // Add the item to the set //TODO Rename when generic
+          let item = new Image(
+            jsonItem.id,
+            jsonItem.name,
+            itemOwner,
+            jsonItem.permsCss,
+            jsonItem.clientPath,
+            itemTags
           );
-          images.add(image);
+          items.add(item);
         });
 
-        const res = this.initialize_image_tokens(images, tagValuesMap);
-        images = res[0];
+        const res = this.initialize_tokens(items, tagValuesMap);
+        items = res[0];
         let tokenMap = res[1];
         let unmappedTags = res[2];;
 
         // Set the state
-        // Special case requiredTokenCardinality for when there is only one image
+        // Special case requiredTokenCardinality for when there is only one item
         this.setState({
-          images: images,
+          items: items,
           users: users,
           tags: tags,
           tokenMap: tokenMap,
           unmappedTags: unmappedTags,
-          requiredTokenCardinality: images.size === 1 ? 1 : 2,
-          maxTokenCardinality: images.size,
+          requiredTokenCardinality: items.size === 1 ? 1 : 2,
+          maxTokenCardinality: items.size,
           tagValuesMap: tagValuesMap
         });
 
@@ -241,11 +244,11 @@ export default class AutoTagForm extends React.Component {
     );
   }
 
-  initialize_image_tokens(images, tagValuesMap) {
+  initialize_tokens(items, tagValuesMap) {
     // Separate initialize token function to refresh the tokens
     // each time separators are changed, without sending query to the server
 
-    // Set of all tags which are used in at least one image, irrespective of
+    // Set of all tags which are used in at least one item, irrespective of
     // whether there is a token mapping using it or possible using it
     let allAppliedTags = new Set();
 
@@ -254,20 +257,20 @@ export default class AutoTagForm extends React.Component {
     // Counts of token use
     let tokenMap = new Map();
 
-    // Process the images
-    images.forEach(image => {
-      // Find the tokens on each image, updating the tokenMap in place
-      image.tokens = this.tokensInName(image, tagValuesMap, tokenMap);
+    // Process the items
+    items.forEach(item => {
+      // Find the tokens on each item, updating the tokenMap in place
+      item.tokens = this.tokensInName(item, tagValuesMap, tokenMap);
 
-      // Check any tokens that exist on this image by default
-      image.checkedTokens = new Set(image.tokens);
+      // Check any tokens that exist on this item by default
+      item.checkedTokens = new Set(item.tokens);
 
-      // Add any tags found on this image to this definitive set of used tags
-      allAppliedTags = union(allAppliedTags, image.tags);
+      // Add any tags found on this item to this definitive set of used tags
+      allAppliedTags = union(allAppliedTags, item.tags);
     });
 
-    // Process the images again now that the token->tag map is complete as
-    // the image may have tags applied for token->tag mappings where it
+    // Process the items again now that the token->tag map is complete as
+    // the item may have tags applied for token->tag mappings where it
     // does not have the token. These should also be marked as checked
     // automatically
 
@@ -294,44 +297,44 @@ export default class AutoTagForm extends React.Component {
 
     // Check tokens due to applied tags for auto-mappings and
     // Check tags due to applied tags where there are no mappings
-    images.forEach(image => {
+    items.forEach(item => {
 
-      // Get the set of tags on this image that are currently mapped
-      let appliedImageTags = intersection(activeTagSet, image.tags);
+      // Get the set of tags on this item that are currently mapped
+      let appliedItemTags = intersection(activeTagSet, item.tags);
 
       // Lookup the tokens which those tags are mapped to and mark them
       // as checked
-      appliedImageTags.forEach(tag => {
+      appliedItemTags.forEach(tag => {
         let token = activeTagTokenMap.get(tag);
-        image.checkToken(token);
+        item.checkToken(token);
       });
 
-      // Get the set of tags that are on the image, but not involved in
+      // Get the set of tags that are on the item, but not involved in
       // any mapping. Apply this to checkedTags
-      image.checkedTags = intersection(image.tags, unmappedTags);
+      item.checkedTags = intersection(item.tags, unmappedTags);
 
     });
-    return [images, tokenMap, unmappedTags];
+    return [items, tokenMap, unmappedTags];
   }
 
   componentDidMount() {
-    this.loadFromServer(this.props.imageIds);
+    this.loadFromServer(this.props.itemIds);
   }
 
   componentWillReceiveProps(nextProps) {
     // If the sizes are not the same we should definitely reload
-    if (nextProps.imageIds.size !== this.props.imageIds.size) {
-      this.loadFromServer(nextProps.imageIds);
+    if (nextProps.itemIds.size !== this.props.itemIds.size) {
+      this.loadFromServer(nextProps.itemIds);
       // Bail out as a reload was required and done
       return;
     }
 
     // If the sets are the same size, then compare the values.
     if (
-      difference(new Set(nextProps.imageIds), new Set(this.props.imageIds)).size > 0 ||
-      difference(new Set(this.props.imageIds), new Set(nextProps.imageIds)).size > 0
+      difference(new Set(nextProps.itemIds), new Set(this.props.itemIds)).size > 0 ||
+      difference(new Set(this.props.itemIds), new Set(nextProps.itemIds)).size > 0
     ) {
-      this.loadFromServer(nextProps.imageIds);
+      this.loadFromServer(nextProps.itemIds);
       // Bail out as a reload was required and done
       return;
     }
@@ -346,10 +349,10 @@ export default class AutoTagForm extends React.Component {
       kv => kv[1].isActive()
     ));
 
-    // Examine each image for changes
+    // Examine each item for changes
     let changes = [];
-    let newImages = new Set();
-    this.state.images.forEach(image => {
+    let newItems = new Set();
+    this.state.items.forEach(item => {
       let additions = [];
       let removals = [];
 
@@ -358,15 +361,15 @@ export default class AutoTagForm extends React.Component {
       tokenMapActive.forEach(token => {
         let tag = token.activeTag;
 
-        // Check if the user has permission to annotate this tag to this image
-        if (tag.canAnnotate() && image.canAnnotate()) {
+        // Check if the user has permission to annotate this tag to this item
+        if (tag.canAnnotate() && item.canAnnotate()) {
 
           // Get the checked and tagged states
-          let checked = image.checkedTokens.has(token);
-          let tagged = image.tags.has(tag);
+          let checked = item.checkedTokens.has(token);
+          let tagged = item.tags.has(tag);
 
           // Only add/remove if there has been a change
-          // Assume success and thus update the image
+          // Assume success and thus update the item
           if (checked !== tagged) {
             // Addition
             if (checked) {
@@ -385,14 +388,14 @@ export default class AutoTagForm extends React.Component {
       this.state.unmappedTags.forEach(tag => {
 
         // Get the checked and tagged states
-        let checked = image.checkedTags.has(tag);
-        let tagged = image.tags.has(tag);
+        let checked = item.checkedTags.has(tag);
+        let tagged = item.tags.has(tag);
 
-        // Check if the user has permission to annotate this tag to this image
-        if (tag.canAnnotate() && image.canAnnotate()) {
+        // Check if the user has permission to annotate this tag to this item
+        if (tag.canAnnotate() && item.canAnnotate()) {
 
           // Only add/remove if there has been a change
-          // Assume success and thus update the image
+          // Assume success and thus update the item
           if (checked !== tagged) {
             // Addition
             if (checked) {
@@ -405,23 +408,23 @@ export default class AutoTagForm extends React.Component {
         }
       });
 
-      // Add this image additions and removals to the payload
+      // Add this item additions and removals to the payload
       if (additions.length > 0 || removals.length > 0) {
         changes.push({
-          'imageId': image.id,
+          'itemId': item.id,
           'additions': additions.map(tag => tag.id),
           'removals': removals.map(tag => tag.id)
         });
 
-        // If there were updates, then assume success, dirty the image and the
+        // If there were updates, then assume success, dirty the item and the
         // applied tags and add/remove the additions/removals
-        let newImage = image.clone();
-        newImage.tags = new Set(newImage.tags);
-        newImage.tags = union(newImage.tags, additions);
-        newImage.tags = difference(newImage.tags, new Set(removals));
-        newImages.add(newImage);
+        let newItem = item.clone();
+        newItem.tags = new Set(newItem.tags);
+        newItem.tags = union(newItem.tags, additions);
+        newItem.tags = difference(newItem.tags, new Set(removals));
+        newItems.add(newItem);
       } else {
-        newImages.add(image);
+        newItems.add(item);
       }
 
     });
@@ -432,7 +435,7 @@ export default class AutoTagForm extends React.Component {
     }
 
     this.setState({
-      images: newImages
+      items: newItems
     });
 
     $.ajax({
@@ -457,70 +460,70 @@ export default class AutoTagForm extends React.Component {
 
   }
 
-  cellCheckedChange(image, tokenOrTag) {
+  cellCheckedChange(item, tokenOrTag) {
     // Add/remove the token or tag depending on if it is current present
 
-    // Dirty the image and checkedTokens/checkedTags
-    let newImage = image.clone();
+    // Dirty the item and checkedTokens/checkedTags
+    let newItem = item.clone();
 
     if (tokenOrTag instanceof Token) {
-      newImage.checkedTokens = new Set(image.checkedTokens);
-      newImage.checkedTokens.has(tokenOrTag) ? newImage.checkedTokens.delete(tokenOrTag): newImage.checkedTokens.add(tokenOrTag);
+      newItem.checkedTokens = new Set(item.checkedTokens);
+      newItem.checkedTokens.has(tokenOrTag) ? newItem.checkedTokens.delete(tokenOrTag): newItem.checkedTokens.add(tokenOrTag);
     } else if (tokenOrTag instanceof Tag) {
-      newImage.checkedTags = new Set(image.checkedTags);
-      newImage.checkedTags.has(tokenOrTag) ? newImage.checkedTags.delete(tokenOrTag): newImage.checkedTags.add(tokenOrTag);
+      newItem.checkedTags = new Set(item.checkedTags);
+      newItem.checkedTags.has(tokenOrTag) ? newItem.checkedTags.delete(tokenOrTag): newItem.checkedTags.add(tokenOrTag);
     }
 
-    this.state.images.delete(image);
-    this.state.images.add(newImage);
+    this.state.items.delete(item);
+    this.state.items.add(newItem);
 
     // And update state
     this.setState({
-      images: this.state.images
+      items: this.state.items
     });
 
   }
 
   handleCheckedChangeAll(tokenOrTag, selectAll) {
-    // Add/remove the token or tag to all images depending on if it is current present
+    // Add/remove the token or tag to all items depending on if it is current present
 
-    // Create mix of dirty and original images
-    let newImages;
+    // Create mix of dirty and original items
+    let newItems;
     if (tokenOrTag instanceof Token) {
-      newImages = new Set([...this.state.images].map(image => {
+      newItems = new Set([...this.state.items].map(item => {
 
-        // If the image is not already correctly checked
-        if (selectAll !== image.checkedTokens.has(tokenOrTag)) {
-          // Mark image and checkedTokens dirty
-          let newImage = image.clone();
-          newImage.checkedTokens = new Set(image.checkedTokens);
-          selectAll ? newImage.checkedTokens.add(tokenOrTag): newImage.checkedTokens.delete(tokenOrTag);
-          return newImage;
+        // If the item is not already correctly checked
+        if (selectAll !== item.checkedTokens.has(tokenOrTag)) {
+          // Mark item and checkedTokens dirty
+          let newItem = item.clone();
+          newItem.checkedTokens = new Set(item.checkedTokens);
+          selectAll ? newItem.checkedTokens.add(tokenOrTag): newItem.checkedTokens.delete(tokenOrTag);
+          return newItem;
         }
-        // Otherwise, return the existing image
-        return image;
+        // Otherwise, return the existing item
+        return item;
       }));
 
     } else if (tokenOrTag instanceof Tag) {
 
-      newImages = new Set([...this.state.images].map(image => {
+      newItems = new Set([...this.state.items].map(item => {
 
-        // If the image is not already correctly checked
-        if (selectAll !== image.checkedTags.has(tokenOrTag)) {
-          // Mark image and checkedTags dirty
-          let newImage = image.clone();
-          newImage.checkedTags = new Set(image.checkedTags);
-          selectAll ? newImage.checkedTags.add(tokenOrTag): newImage.checkedTags.delete(tokenOrTag);
-          return newImage;
+        // If the item is not already correctly checked
+        if (selectAll !== item.checkedTags.has(tokenOrTag)) {
+          // Mark item and checkedTags dirty
+          let newItem = item.clone();
+          newItem.checkedTags = new Set(item.checkedTags);
+          selectAll ? newItem.checkedTags.add(tokenOrTag): newItem.checkedTags.delete(tokenOrTag);
+          return newItem;
         }
-        // Otherwise, return the existing image
-        return image;
+        // Otherwise, return the existing item
+        return item;
       }));
     }
 
     // Update state
     this.setState({
-      images: newImages
+      items: newItems
     });
   }
 
@@ -528,15 +531,15 @@ export default class AutoTagForm extends React.Component {
 
     // TODO Check if this tag is already assigned to some other column?
 
-    // Recalculate the checked state of this column for each image row
-    for (let image of this.state.images) {
-      // Determine if the image should be checked for this mapping either
+    // Recalculate the checked state of this column for each item row
+    for (let item of this.state.items) {
+      // Determine if the item should be checked for this mapping either
       // because it has the token or it has the tag applied
-      let checked = image.tokens.has(token) || image.tags.has(tag);
+      let checked = item.tokens.has(token) || item.tags.has(tag);
 
-      // Update the image if necessary
-      if (checked !== image.checkedTokens.has(token)) {
-        checked ? image.checkedTokens.add(token) : image.checkedTokens.delete(token);
+      // Update the item if necessary
+      if (checked !== item.checkedTokens.has(token)) {
+        checked ? item.checkedTokens.add(token) : item.checkedTokens.delete(token);
       }
     }
 
@@ -546,7 +549,7 @@ export default class AutoTagForm extends React.Component {
     // Update state.
     // Mark tokenMap dirty
     this.setState({
-      images: this.state.images,
+      items: this.state.items,
       tokenMap: new Map(this.state.tokenMap)
     });
 
@@ -650,7 +653,7 @@ export default class AutoTagForm extends React.Component {
   }
 
   refreshForm() {
-    this.loadFromServer(this.props.imageIds);
+    this.loadFromServer(this.props.itemIds);
   }
 
   toggleUnmapped() {
@@ -669,20 +672,20 @@ export default class AutoTagForm extends React.Component {
     // Do not use setState here yet (would already refresh the page)
     this.state.separators = value;
 
-    let images = this.state.images;
+    let items = this.state.items;
     let tagValuesMap = this.state.tagValuesMap;
     tokenMap, unmappedTags;
 
-    // Recompute the image tokens
-    const res = this.initialize_image_tokens(images, tagValuesMap);
-    images = res[0];
+    // Recompute the item tokens
+    const res = this.initialize_tokens(items, tagValuesMap);
+    items = res[0];
     let tokenMap = res[1];
     let unmappedTags = res[2];
 
     // Set the state
-    // Special case requiredTokenCardinality for when there is only one image
+    // Special case requiredTokenCardinality for when there is only one item
     this.setState({
-      images: images,
+      items: items,
       tokenMap: tokenMap,
       unmappedTags: unmappedTags
     });
@@ -693,7 +696,7 @@ export default class AutoTagForm extends React.Component {
     // Filter out any tokens that do not meet the requirements
     // Requirements for inclusion:
     // 1) Matches an existing tag value
-    // 2) Is present on required number of images
+    // 2) Is present on required number of items
     let tokenMap = new Map([...this.state.tokenMap].filter(kv => {
       let token = kv[1];
       return (
@@ -724,7 +727,7 @@ export default class AutoTagForm extends React.Component {
         />
 
         <AutoTagTable tokenMap={this.filteredTokenMap()}
-                      images={this.state.images}
+                      items={this.state.items}
                       unmappedTags={this.state.unmappedTags}
                       showUnmapped={this.state.showUnmapped}
                       requiredTokenCardinality={this.state.requiredTokenCardinality}

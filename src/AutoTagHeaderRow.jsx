@@ -17,7 +17,7 @@ export default class AutoTagHeaderRow extends React.Component {
                                      tokenMap={this.props.tokenMap}
                                      selectMapping={this.props.selectMapping}
                                      newMapping={this.props.newMapping}
-                                     images={this.props.images}
+                                     items={this.props.items}
                                      handleCheckedChangeAll={this.props.handleCheckedChangeAll}
                                      key={token.value} />
         )
@@ -27,7 +27,7 @@ export default class AutoTagHeaderRow extends React.Component {
 
     let cellNodesTag = [...this.props.unmappedTags].map(tag =>
       <AutoTagHeaderRowTagCell tag={tag}
-                               images={this.props.images}
+                               items={this.props.items}
                                handleCheckedChangeAll={this.props.handleCheckedChangeAll}
                                key={tag.id} />
     );
@@ -37,7 +37,7 @@ export default class AutoTagHeaderRow extends React.Component {
         <tr>
           {cellNodesToken}
           {cellNodesTag}
-          <th>Original Import Path<br/>Image Name</th>
+          <th>Original Import Path<br/>Item Name</th>
         </tr>
       </thead>
     );

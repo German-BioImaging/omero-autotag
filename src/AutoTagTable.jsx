@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import AutoTagHeaderRow from './AutoTagHeaderRow';
-import AutoTagImageRow from './AutoTagImageRow';
+import AutoTagItemRow from './AutoTagItemRow';
 
 export default class AutoTagForm extends React.Component {
 
@@ -11,7 +11,7 @@ export default class AutoTagForm extends React.Component {
     if (
         this.props.showUnmapped &&
         nextProps.requiredTokenCardinality != this.props.requiredTokenCardinality &&
-        this.props.images === nextProps.images
+        this.props.items === nextProps.items
     ) {
       // Ensure it would actually result in a change of number of tags displayed
       return nextProps.tokenMap.size !== this.props.tokenMap.size;
@@ -24,7 +24,7 @@ export default class AutoTagForm extends React.Component {
   render() {
 
     // Sort the rows by name, then ID
-    let rowNodes = [...this.props.images].sort((a, b) => {
+    let rowNodes = [...this.props.items].sort((a, b) => {
       let caselessA = a.name.toLowerCase();
       let caselessB = b.name.toLowerCase();
 
@@ -41,9 +41,9 @@ export default class AutoTagForm extends React.Component {
         return 1
       }
       return 0;
-    }).map(image =>
-        <AutoTagImageRow key={image.id}
-                         image={image}
+    }).map(item =>
+        <AutoTagItemRow key={item.id}
+                         item={item}
                          tokenMap={this.props.tokenMap}
                          unmappedTags={this.props.unmappedTags}
                          cellCheckedChange={this.props.cellCheckedChange}
@@ -65,7 +65,7 @@ export default class AutoTagForm extends React.Component {
                               unmappedTags={this.props.unmappedTags}
                               selectMapping={this.props.selectMapping}
                               newMapping={this.props.newMapping}
-                              images={this.props.images}
+                              items={this.props.items}
                               handleCheckedChangeAll={this.props.handleCheckedChangeAll}
                               showUnmapped={this.props.showUnmapped} />
 

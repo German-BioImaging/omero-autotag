@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default class AutoTagImageRowTagCell extends React.Component {
+export default class AutoTagItemRowTagCell extends React.Component {
 
   constructor() {
     super();
@@ -11,36 +11,36 @@ export default class AutoTagImageRowTagCell extends React.Component {
 
   shouldComponentUpdate(nextProps, nextState) {
     return (
-      // The image was updated AND this tag is now checked/unchecked
+      // The item was updated AND this tag is now checked/unchecked
       // whereas before it was unchecked/checked
       (
-        nextProps.image !== this.props.image &&
-        nextProps.image.checkedTags.has(nextProps.tag) !== this.props.image.checkedTags.has(this.props.tag)
+        nextProps.item !== this.props.item &&
+        nextProps.item.checkedTags.has(nextProps.tag) !== this.props.item.checkedTags.has(this.props.tag)
       ) ||
-      // The image was updated AND this tag is now applied/unapplied
+      // The item was updated AND this tag is now applied/unapplied
       // whereas before it was unapplied/applied
       (
-        nextProps.image !== this.props.image &&
-        nextProps.image.tags.has(nextProps.tag) !== this.props.image.tags.has(this.props.tag)
+        nextProps.item !== this.props.item &&
+        nextProps.item.tags.has(nextProps.tag) !== this.props.item.tags.has(this.props.tag)
       )
     );
   }
 
   isTagged() {
-    return this.props.image.tags.has(this.props.tag);
+    return this.props.item.tags.has(this.props.tag);
   }
 
   isChecked() {
-    return this.props.image.checkedTags.has(this.props.tag);
+    return this.props.item.checkedTags.has(this.props.tag);
   }
 
   isDisabled() {
     // No permissions to annotate
-    return !(this.props.tag.canAnnotate() && this.props.image.canAnnotate());
+    return !(this.props.tag.canAnnotate() && this.props.item.canAnnotate());
   }
 
   handleCheckedChange() {
-    this.props.cellCheckedChange(this.props.image, this.props.tag);
+    this.props.cellCheckedChange(this.props.item, this.props.tag);
   }
 
   render() {

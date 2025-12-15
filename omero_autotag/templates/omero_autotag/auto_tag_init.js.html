@@ -4,18 +4,18 @@
 
 $(function() {
   var pluginIndex = {{ forloop.counter }};
-  var url="{% url 'autotag_get_objects' %}";
+  var url="{% url 'autotag_get_items' %}";
   var urlUpdate="{% url 'autotag_process_update' %}";
   var urlCreateTag="{% url 'autotag_create_tag' %}";
 
   var reactRender = function(datatree, selectedNode) {
-    var imageIds = [];
+    var itemIds = [];
 
     $.each(selectedNode.children, function(index, child) {
-      imageIds.push(datatree.get_node(child).data.obj.id);
+      itemIds.push(datatree.get_node(child).data.obj.id);
     });
 
-    autotagform.default(imageIds, url, urlUpdate, urlCreateTag);
+    autotagform.default(itemIds, url, urlUpdate, urlCreateTag);
 
   };
 
@@ -28,7 +28,7 @@ $(function() {
       var datatree = $.jstree.reference('#dataTree');
       if (!datatree) return;
 
-      // We use the tree to access selected objects, since we can traverse
+      // We use the tree to access selected items, since we can traverse
       // to check parents etc...
       // Note: We do not use the parameters selected, dtype or oid as
       // it is easier to use the tree directly as these do not refer to
@@ -42,7 +42,7 @@ $(function() {
       // TODO Handle multi-selection
       var selected = tree_selected[0];
 
-      // If the selected object is an image, return that image and its siblings
+      // If the selected item is an image, return that image and its siblings
       if (selected.type === 'image') {
         // Set selected to be the parent so that lastSelected can be compared
         // to the container
@@ -50,7 +50,7 @@ $(function() {
         reactRender(datatree, selected);
       }
 
-      // If the selected object is a Dataset, tag or orphaned return its children
+      // If the selected item is a Dataset, tag or orphaned return its children
       else if (selected.type === 'dataset' || selected.type === 'orphaned' || selected.type === 'tag'){
         // Make sure that the dataset is loaded
         if (!datatree.is_loaded(selected)) {

@@ -77,7 +77,7 @@ export default class AutoTagToolbar extends React.Component {
         }
 
         <ReactTooltip id={'tooltip-toolbar-slider'} place="bottom" type="dark" effect="float">
-          Hide columns if token is found on fewer than this number of images
+          Hide columns if token is found on fewer than this number of items.
         </ReactTooltip>
 
         <span
