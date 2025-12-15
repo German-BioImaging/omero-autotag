@@ -4,10 +4,9 @@
 
 $(function() {
   var pluginIndex = {{ forloop.counter }};
-  var url="{% url 'webtagging_get_image_detail_and_tags' %}";
-  var urlUpdate="{% url 'webtagging_process_update' %}";
-  var urlCreateTag="{% url 'webtagging_create_tag' %}";
-
+  var url="{% url 'autotag_get_objects' %}";
+  var urlUpdate="{% url 'autotag_process_update' %}";
+  var urlCreateTag="{% url 'autotag_create_tag' %}";
 
   var reactRender = function(datatree, selectedNode) {
     var imageIds = [];

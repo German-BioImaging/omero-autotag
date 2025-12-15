@@ -3,16 +3,16 @@ from . import views
 
 urlpatterns = [
     re_path(
-        r"^get_image_detail_and_tags/$",
-        views.get_image_detail_and_tags,
-        name="webtagging_get_image_detail_and_tags",
+        r"^get_objects/$",
+        views.get_objects,
+        name="autotag_get_objects",
     ),
     # process main form submission
     re_path(
         r"^auto_tag/processUpdate/$",
         views.process_update,
-        name="webtagging_process_update",
+        name="autotag_process_update",
     ),
     # Create tags for tags dialog
-    re_path(r"^create_tag/$", views.create_tag, name="webtagging_create_tag"),
+    re_path(r"^create_tag/$", views.create_tag, name="autotag_create_tag"),
 ]
