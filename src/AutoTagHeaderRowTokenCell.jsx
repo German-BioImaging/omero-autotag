@@ -16,13 +16,12 @@ export default class AutoTagHeaderRowTokenCell extends React.Component {
 
   isChecked() {
 
-    for (let image of this.props.images) {
-      if (!image.checkedTokens.has(this.props.token)) {
+    for (let item of this.props.items) {
+      if (!item.checkedTokens.has(this.props.token)) {
         return false;
       }
     }
     return true;
-
   }
 
   isDisabled() {
