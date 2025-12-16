@@ -45,6 +45,13 @@ export default class AutoTagToolbar extends React.Component {
         }}
         className={'toolbar'}
       >
+        <span
+          data-tip
+          data-for={'tooltip-toolbar-show-all'}
+          style={{float: 'left', marginLeft: '10px', fontSize: '12px', fontWeight: 'bold', lineHeight: '29px'}}
+        >
+          Tagging {this.props.itemType}s
+        </span>
 
         {
           this.props.showUnmapped &&
@@ -53,7 +60,7 @@ export default class AutoTagToolbar extends React.Component {
             data-for={'tooltip-toolbar-slider'}
             style={{
               float: 'left',
-              marginLeft: '10px',
+              marginLeft: '20px',
               fontSize: '12px',
               fontWeight: 'bold',
               lineHeight: '29px'
@@ -79,14 +86,6 @@ export default class AutoTagToolbar extends React.Component {
         <ReactTooltip id={'tooltip-toolbar-slider'} place="bottom" type="dark" effect="float">
           Hide columns if token is found on fewer than this number of items.
         </ReactTooltip>
-
-        <span
-          data-tip
-          data-for={'tooltip-toolbar-show-all'}
-          style={{float: 'left', marginLeft: '10px', fontSize: '12px', fontWeight: 'bold', lineHeight: '29px'}}
-        >
-          Tagging {this.props.itemType}s
-        </span>
 
         <span
           data-tip
