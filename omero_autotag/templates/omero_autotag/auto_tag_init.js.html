@@ -10,8 +10,14 @@ $(function() {
 
   var reactRender = function(datatree, itemType, selectedNode) {
     var itemIds = [];
-
     $.each(selectedNode.children, function(index, child) {
+      if (selectedNode.type === "tag") {
+        var childNode = datatree.get_node(child);
+        if (childNode.type !== "image") {
+          // Skip non-image children of a tag
+          return;
+        }
+      }
       itemIds.push(datatree.get_node(child).data.obj.id);
     });
     autotagform.default(itemIds, itemType, url, urlUpdate, urlCreateTag); // calls autotagform in Main.jsx
