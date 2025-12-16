@@ -28,25 +28,26 @@ def process_update(request, conn=None, **kwargs):
     if not request.POST:
         return HttpResponseNotAllowed("Methods allowed: POST")
 
-    items = json.loads(request.body)
+    items = json.loads(request.POST.get("change"))
+    itemType = request.POST.get("itemType").capitalize()
 
     additions = []
     removals = []
 
     for item in items:
-        iid = item["itemId"]
+        oid = item["itemId"]
 
         additions.extend(
-            [(int(iid), int(addition),) for addition in item["additions"]]
+            [(int(oid), int(addition),) for addition in item["additions"]]
         )
 
         removals.extend(
-            [(int(iid), int(removal),) for removal in item["removals"]]
+            [(int(oid), int(removal),) for removal in item["removals"]]
         )
 
     # TODO Interface for create_tag_annotations_links is a bit nasty, but go
     # along with it for now
-    create_tag_annotations_links(conn, additions, removals)
+    create_tag_annotations_links(conn, itemType, additions, removals)
 
     return HttpResponse("")
 
@@ -117,7 +118,7 @@ def get_items(request, conn=None, **kwargs):
         return HttpResponseNotAllowed("Methods allowed: POST")
 
     item_ids = request.POST.getlist("ids[]")
-    dataType = "Image"# request.POST.get("dataType").capitalize()
+    itemType = request.POST.get("itemType", "image").capitalize()
 
     if not item_ids:
         return HttpResponseBadRequest("Item IDs required")
@@ -152,7 +153,7 @@ def get_items(request, conn=None, **kwargs):
     # Get the tags that are applied to individual images
     q = f"""
         SELECT DISTINCT itlink.parent.id, itlink.child.id
-        FROM {dataType}AnnotationLink itlink
+        FROM {itemType}AnnotationLink itlink
         WHERE itlink.child.class=TagAnnotation
         AND itlink.parent.id IN (:oids)
         """
@@ -161,7 +162,7 @@ def get_items(request, conn=None, **kwargs):
     for e in qs.projection(q, params, service_opts):
         tags_on_items[unwrap(e[0])].append(unwrap(e[1]))
 
-    if dataType == "Image":
+    if itemType == "Image":
         # Get the images' details
         q = """
             SELECT new map(image.id AS id,
@@ -182,8 +183,8 @@ def get_items(request, conn=None, **kwargs):
             SELECT new map(o.id AS id,
                 o.name AS name,
                 o.details.owner.id AS ownerId,
-                o AS {dataType.lower()}_details_permissions)
-            FROM {dataType} o
+                o AS {itemType.lower()}_details_permissions)
+            FROM {itemType} o
             WHERE o.id IN (:oids)
             ORDER BY lower(o.name), o.id
             """
@@ -193,11 +194,11 @@ def get_items(request, conn=None, **kwargs):
     for e in qs.projection(q, params, service_opts):
         e = unwrap(e)[0]
         e["permsCss"] = tree.parse_permissions_css(
-            e[f"{dataType.lower()}_details_permissions"],
+            e[f"{itemType.lower()}_details_permissions"],
             e["ownerId"], conn)
-        del e[f"{dataType.lower()}_details_permissions"]
+        del e[f"{itemType.lower()}_details_permissions"]
         e["tags"] = tags_on_items.get(e["id"]) or []
-        if dataType != "Image":
+        if itemType != "Image":
             e["filesetId"] = "-1"
             e["clientPath"] = ""
         result_items.append(e)

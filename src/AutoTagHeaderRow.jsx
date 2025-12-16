@@ -37,7 +37,7 @@ export default class AutoTagHeaderRow extends React.Component {
         <tr>
           {cellNodesToken}
           {cellNodesTag}
-          <th>Original Import Path<br/>Item Name</th>
+          <th>{this.props.itemType==="image"?<div><span>Original Import Path</span><br/><span>Item Name</span></div>:"Item Name"}</th>
         </tr>
       </thead>
     );

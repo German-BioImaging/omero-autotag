@@ -43,7 +43,7 @@ export default class AutoTagItemRow extends React.Component {
       <tr>
         {cellNodesToken}
         {cellNodesTag}
-        <td style={{whiteSpace: 'nowrap'}}>{item.clientPath}<br/>{item.name}&nbsp;(id:{item.id})</td>
+        <td style={{whiteSpace: 'nowrap'}}>{item.clientPath?<div>{item.clientPath}<br/>{item.name}&nbsp;(id:{item.id})</div>:`${item.name} (id:${item.id})`}</td>
       </tr>
     );
   }

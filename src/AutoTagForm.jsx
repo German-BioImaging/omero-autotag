@@ -124,7 +124,7 @@ export default class AutoTagForm extends React.Component {
     return itemTokens;
   }
 
-  loadFromServer(itemIds, dataType) {
+  loadFromServer(itemIds, itemType) {
 
     // If there is a request in progress, abort it in favour of this one
     if (this.loadRequest && this.loadRequest.readyState !== 4) {
@@ -143,7 +143,7 @@ export default class AutoTagForm extends React.Component {
       type: "POST",
       data: {
         ids: itemIds,
-        dataType: dataType
+        itemType: itemType
       },
       dataType: 'json',
       cache: false
@@ -318,13 +318,15 @@ export default class AutoTagForm extends React.Component {
   }
 
   componentDidMount() {
-    this.loadFromServer(this.props.itemIds);
+    this.loadFromServer(this.props.itemIds, this.props.itemType);
   }
 
   componentWillReceiveProps(nextProps) {
+
     // If the sizes are not the same we should definitely reload
-    if (nextProps.itemIds.size !== this.props.itemIds.size) {
-      this.loadFromServer(nextProps.itemIds);
+    // If the itemType has changed, reload regardless of itemIds
+    if (nextProps.itemIds.size !== this.props.itemIds.size || nextProps.itemType !== this.props.itemType) {
+      this.loadFromServer(nextProps.itemIds, nextProps.itemType);
       // Bail out as a reload was required and done
       return;
     }
@@ -334,7 +336,7 @@ export default class AutoTagForm extends React.Component {
       difference(new Set(nextProps.itemIds), new Set(this.props.itemIds)).size > 0 ||
       difference(new Set(this.props.itemIds), new Set(nextProps.itemIds)).size > 0
     ) {
-      this.loadFromServer(nextProps.itemIds);
+      this.loadFromServer(nextProps.itemIds, nextProps.itemType);
       // Bail out as a reload was required and done
       return;
     }
@@ -441,7 +443,10 @@ export default class AutoTagForm extends React.Component {
     $.ajax({
       url: this.props.urlUpdate,
       type: "POST",
-      data: JSON.stringify(changes),
+      data: {
+        change: JSON.stringify(changes),
+        itemType: this.props.itemType
+      },
       success: function(data) {
         // No action required
       }.bind(this),
@@ -653,7 +658,7 @@ export default class AutoTagForm extends React.Component {
   }
 
   refreshForm() {
-    this.loadFromServer(this.props.itemIds);
+    this.loadFromServer(this.props.itemIds, this.props.itemType);
   }
 
   toggleUnmapped() {
@@ -724,10 +729,12 @@ export default class AutoTagForm extends React.Component {
                         refreshForm={this.refreshForm}
                         separators={this.state.separators}
                         handleChangeSeparator={this.handleChangeSeparator}
+                        itemType={this.props.itemType}
         />
 
         <AutoTagTable tokenMap={this.filteredTokenMap()}
                       items={this.state.items}
+                      itemType={this.props.itemType}
                       unmappedTags={this.state.unmappedTags}
                       showUnmapped={this.state.showUnmapped}
                       requiredTokenCardinality={this.state.requiredTokenCardinality}

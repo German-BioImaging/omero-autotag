@@ -83,6 +83,14 @@ export default class AutoTagToolbar extends React.Component {
         <span
           data-tip
           data-for={'tooltip-toolbar-show-all'}
+          style={{float: 'left', marginLeft: '10px', fontSize: '12px', fontWeight: 'bold', lineHeight: '29px'}}
+        >
+          Tagging {this.props.itemType}s
+        </span>
+
+        <span
+          data-tip
+          data-for={'tooltip-toolbar-show-all'}
           style={{fontSize: '12px', fontWeight: 'bold', lineHeight: '29px'}}
         >
           Split on&nbsp;

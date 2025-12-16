@@ -66,6 +66,7 @@ export default class AutoTagForm extends React.Component {
                               selectMapping={this.props.selectMapping}
                               newMapping={this.props.newMapping}
                               items={this.props.items}
+                              itemType={this.props.itemType}
                               handleCheckedChangeAll={this.props.handleCheckedChangeAll}
                               showUnmapped={this.props.showUnmapped} />
 

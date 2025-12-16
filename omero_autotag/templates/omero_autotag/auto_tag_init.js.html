@@ -8,15 +8,13 @@ $(function() {
   var urlUpdate="{% url 'autotag_process_update' %}";
   var urlCreateTag="{% url 'autotag_create_tag' %}";
 
-  var reactRender = function(datatree, selectedNode) {
+  var reactRender = function(datatree, itemType, selectedNode) {
     var itemIds = [];
 
     $.each(selectedNode.children, function(index, child) {
       itemIds.push(datatree.get_node(child).data.obj.id);
     });
-
-    autotagform.default(itemIds, url, urlUpdate, urlCreateTag);
-
+    autotagform.default(itemIds, itemType, url, urlUpdate, urlCreateTag); // calls autotagform in Main.jsx
   };
 
   $("#auto_tag_panel").omeroweb_center_plugin({
@@ -47,7 +45,7 @@ $(function() {
         // Set selected to be the parent so that lastSelected can be compared
         // to the container
         selected = datatree.get_node(datatree.get_parent(selected));
-        reactRender(datatree, selected);
+        reactRender(datatree, "image", selected);
       }
 
       // If the selected item is a Dataset, tag or orphaned return its children
@@ -55,14 +53,23 @@ $(function() {
         // Make sure that the dataset is loaded
         if (!datatree.is_loaded(selected)) {
           datatree.load_node(selected, function(node, status){
-            reactRender(datatree, datatree.get_node(node));
+            reactRender(datatree, "image", datatree.get_node(node));
           });
         } else {
-          reactRender(datatree, datatree.get_node(selected));
+          reactRender(datatree, "image", datatree.get_node(selected));
+        }
+      } else if (selected.type === 'project') {
+        // For a project, load the datasets underneath it
+        if (!datatree.is_loaded(selected)) {
+          datatree.load_node(selected, function(node, status){
+            reactRender(datatree, "dataset", datatree.get_node(node));
+          });
+        } else {
+          reactRender(datatree, "dataset", datatree.get_node(selected));
         }
       }
     },
-    supported_obj_types: ['dataset', 'image', 'orphaned', 'tag']
+    supported_obj_types: ['dataset', 'image', 'orphaned', 'tag', 'project'],
   });
 });
 
