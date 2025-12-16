@@ -5,7 +5,7 @@ import 'react-select/dist/react-select.css';
 import './webtagging.css';
 
 import Token from './Token';
-import Image from './Image';
+import Item from './Item';
 import Tag from './Tag';
 import User from './User';
 import {union, intersection, difference} from './SetUtils';
@@ -211,7 +211,7 @@ export default class AutoTagForm extends React.Component {
             )
           );
           // Add the item to the set //TODO Rename when generic
-          let item = new Image(
+          let item = new Item(
             jsonItem.id,
             jsonItem.name,
             itemOwner,
