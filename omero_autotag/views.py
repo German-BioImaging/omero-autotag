@@ -190,4 +190,18 @@ def get_image_detail_and_tags(request, conn=None, **kwargs):
     # Get the users from this group for reference
     users = tree.marshal_experimenters(conn, group_id=group_id, page=None)
 
+    # Check if the owner of the tags are members of the current group
+    # If not, add "Missing User" entries for them
+    tags_owner_id_set = {t["ownerId"] for t in tags}
+    owner_id_set = {u["id"] for u in users}
+    for missing_owner in (tags_owner_id_set - owner_id_set):
+        users.append(
+            {
+                "id": missing_owner,
+                "omeName": "<hidden>",
+                "firstName": "<hidden>",
+                "lastName": "<hidden>"
+            }
+        )
+
     return JsonResponse({"tags": tags, "images": images, "users": users})
