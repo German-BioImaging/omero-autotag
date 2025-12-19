@@ -138,11 +138,14 @@ export default class AutoTagForm extends React.Component {
       return;
     }
 
+    const ids = Array.isArray(imageIds) ? imageIds : Array.from(imageIds || []);
+
     this.loadRequest = $.ajax({
       url: this.props.url,
       type: "POST",
-      data: { imageIds: imageIds },
-      dataType: 'json',
+      contentType: "application/json",
+      dataType: "json",
+      data: JSON.stringify({ imageIds: ids }), // JSON array
       cache: false
     });
 

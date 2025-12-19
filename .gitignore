@@ -7,3 +7,7 @@ local_settings.py
 *.egg-info
 dist
 build
+node_modules
+var/
+omero_autotag/static/
+package-lock.json
