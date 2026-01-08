@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-from builtins import map, str
 from collections import defaultdict
 from copy import deepcopy
 import json
@@ -113,15 +112,22 @@ def create_tag(request, conn=None, **kwargs):
 def get_image_detail_and_tags(request, conn=None, **kwargs):
     # According to REST, this should be a GET, but because of the amount of
     # data being submitted, this is problematic
-    if not request.POST:
+    if request.method != "POST":
         return HttpResponseNotAllowed("Methods allowed: POST")
 
-    image_ids = request.POST.getlist("imageIds[]")
+    try:
+        data = json.loads(request.body or b"{}")
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest("Invalid request format")
 
-    if not image_ids:
+    image_ids = data.get("imageIds")
+    if not isinstance(image_ids, list) or not image_ids:
         return HttpResponseBadRequest("Image IDs required")
 
-    image_ids = list(map(int, image_ids))
+    try:
+        image_ids = [int(x) for x in image_ids]
+    except (TypeError, ValueError):
+        return HttpResponseBadRequest("Invalid imageIds; must be integers")
 
     group_id = request.session.get("active_group")
     if group_id is None:
