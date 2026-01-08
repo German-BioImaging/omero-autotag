@@ -1,7 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Range from 'react-range';
-import 'react-select/dist/react-select.css';
 import './webtagging.css';
 
 import Token from './Token';

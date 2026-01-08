@@ -409,7 +409,7 @@
 
     background-image:-moz-linear-gradient(top, hsl(350,65%,80%) 0%, hsl(350,60%,90%) 100%) !important; /* FF3.6+ */
     background-image:-webkit-gradient(linear, left top, left bottom, color-stop(0%,hsl(350,65%,85%)), color-stop(100%,hsl(350,60%,90%))) !important; /* Chrome,Safari4+ */
-    background-image:-webkit-linear-gradient(top, hsl(350,65%,80%) 0%,hsl(350,60%,90%) 100% !important); /* Chrome10+,Safari5.1+ */
+    background-image:-webkit-linear-gradient(top, hsl(350,65%,80%) 0%,hsl(350,60%,90%) 100%) !important;  /* Chrome10+,Safari5.1+ */
     background-image:-o-linear-gradient(top, hsl(350,65%,80%) 0%,hsl(350,60%,90%) 100%) !important; /* Opera11.10+ */
     background-image:-ms-linear-gradient(top, hsl(350,65%,80%) 0%,hsl(350,60%,90%) 100%) !important; /* IE10+ */
     filter:progid:DXImageTransform.Microsoft.gradient( startColorstr='#4795CC', endColorstr='#3987BF',GradientType=0 ) !important; /* IE6-9 */
