@@ -79,13 +79,13 @@ export default class AutoTagToolbar extends React.Component {
         </ReactTooltip>
 
         <span
-          data-tooltip-id={'tooltip-toolbar-show-all'}
+          data-tooltip-id={'tooltip-toolbar-split-chars'}
           style={{fontSize: '12px', fontWeight: 'bold', lineHeight: '29px'}}
         >
           Split on&nbsp;
         </span>
 
-        <ReactTooltip id={'tooltip-toolbar-show-all'} place="bottom" variant="dark">
+        <ReactTooltip id={'tooltip-toolbar-split-chars'} place="bottom" variant="dark">
           Characters used to split the path and names to find relevant tags.
         </ReactTooltip>
 
