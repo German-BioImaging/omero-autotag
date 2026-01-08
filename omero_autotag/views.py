@@ -180,7 +180,6 @@ def get_items(request, conn=None, **kwargs):
             JOIN fileset.usedFiles filesetentry
             WHERE index(filesetentry) = 0
             AND image.id IN (:oids)
-            ORDER BY lower(image.name), image.id
             """
     else:
         q = f"""
@@ -190,7 +189,6 @@ def get_items(request, conn=None, **kwargs):
                 o AS {itemType.lower()}_details_permissions)
             FROM {itemType} o
             WHERE o.id IN (:oids)
-            ORDER BY lower(o.name), o.id
             """
 
     result_items = []

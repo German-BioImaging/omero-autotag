@@ -32,12 +32,22 @@ export default class AutoTagHeaderRow extends React.Component {
                                key={tag.id} />
     );
 
+    // Get the sort arrow for the item name column
+    let sortArrow = '';
+    if (this.props.sortColumn === 'name') {
+      sortArrow = this.props.sortDirection === 'asc' ? ' ▲' : ' ▼';
+    }
+
     return (
-      <thead>
+      <thead className="sticky-header">
         <tr>
           {cellNodesToken}
           {cellNodesTag}
-          <th>{this.props.itemType==="image"?<div><span>Original Import Path</span><br/><span>Item Name</span></div>:"Item Name"}</th>
+          <th style={{ cursor: 'pointer', userSelect: 'none' }}
+              onClick={() => this.props.onSort('name')}>
+            {this.props.itemType==="image"?<div><span>Original Import Path</span><br/><span>Item Name</span></div>:"Item Name"}
+            {sortArrow}
+          </th>
         </tr>
       </thead>
     );

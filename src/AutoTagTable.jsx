@@ -6,6 +6,30 @@ import AutoTagItemRow from './AutoTagItemRow';
 
 export default class AutoTagForm extends React.Component {
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      sortColumn: 'name',
+      sortDirection: 'asc' // 'asc' or 'desc'
+    };
+    this.handleSort = this.handleSort.bind(this);
+  }
+
+  handleSort(column) {
+    if (this.state.sortColumn === column) {
+      // Toggle direction if clicking the same column
+      this.setState({
+        sortDirection: this.state.sortDirection === 'asc' ? 'desc' : 'asc'
+      });
+    } else {
+      // Set new column and default to ascending
+      this.setState({
+        sortColumn: column,
+        sortDirection: 'asc'
+      });
+    }
+  }
+
   shouldComponentUpdate(nextProps, nextState) {
     // If it is a change in the required token cardinality (and unmapped tags are displayed)
     if (
@@ -23,24 +47,36 @@ export default class AutoTagForm extends React.Component {
 
   render() {
 
-    // Sort the rows by name, then ID
+    // Sort the rows based on the current sort column and direction
     let rowNodes = [...this.props.items].sort((a, b) => {
-      let caselessA = a.name.toLowerCase();
-      let caselessB = b.name.toLowerCase();
+      let compareValue = 0;
 
-      if (caselessA < caselessB) {
-        return -1;
+      if (this.state.sortColumn === 'name') {
+        let caselessA = a.name.toLowerCase();
+        let caselessB = b.name.toLowerCase();
+
+        if (caselessA < caselessB) {
+          compareValue = -1;
+        } else if (caselessA > caselessB) {
+          compareValue = 1;
+        } else {
+          // If names are equal, sort by ID
+          if (a.id < b.id) {
+            compareValue = -1;
+          } else if (a.id > b.id) {
+            compareValue = 1;
+          }
+        }
+      } else if (this.state.sortColumn === 'id') {
+        if (a.id < b.id) {
+          compareValue = -1;
+        } else if (a.id > b.id) {
+          compareValue = 1;
+        }
       }
-      if (caselessA > caselessB) {
-        return 1;
-      }
-      if (a.id < b.id) {
-        return -1;
-      }
-      if (a.id > b.id) {
-        return 1
-      }
-      return 0;
+
+      // Apply sort direction
+      return this.state.sortDirection === 'asc' ? compareValue : -compareValue;
     }).map(item =>
         <AutoTagItemRow key={item.id}
                          item={item}
@@ -68,7 +104,10 @@ export default class AutoTagForm extends React.Component {
                               items={this.props.items}
                               itemType={this.props.itemType}
                               handleCheckedChangeAll={this.props.handleCheckedChangeAll}
-                              showUnmapped={this.props.showUnmapped} />
+                              showUnmapped={this.props.showUnmapped}
+                              sortColumn={this.state.sortColumn}
+                              sortDirection={this.state.sortDirection}
+                              onSort={this.handleSort} />
 
           <tbody>
             {rowNodes}
