@@ -1,6 +1,5 @@
 import React from 'react';
-import Range from 'react-range';
-import ReactTooltip from 'react-tooltip';
+import { Tooltip as ReactTooltip } from 'react-tooltip';
 
 export default class AutoTagToolbar extends React.Component {
 
@@ -49,8 +48,7 @@ export default class AutoTagToolbar extends React.Component {
         {
           this.props.showUnmapped &&
           <span
-            data-tip
-            data-for={'tooltip-toolbar-slider'}
+            data-tooltip-id={'tooltip-toolbar-slider'}
             style={{
               float: 'left',
               marginLeft: '10px',
@@ -76,7 +74,7 @@ export default class AutoTagToolbar extends React.Component {
                  }} />
         }
 
-        <ReactTooltip id={'tooltip-toolbar-slider'} place="bottom" type="dark" effect="float">
+        <ReactTooltip id={'tooltip-toolbar-slider'} place="bottom" variant="dark">
           Hide columns if token is found on fewer than this number of images
         </ReactTooltip>
 
@@ -100,14 +98,13 @@ export default class AutoTagToolbar extends React.Component {
               }} />
 
         <span
-          data-tip
-          data-for={'tooltip-toolbar-show-all'}
+          data-tooltip-id={'tooltip-toolbar-show-all'}
           style={{fontSize: '12px', fontWeight: 'bold', lineHeight: '29px'}}
         >
           Show All Potential Tags
         </span>
 
-        <ReactTooltip id={'tooltip-toolbar-show-all'} place="bottom" type="dark" effect="float">
+        <ReactTooltip id={'tooltip-toolbar-show-all'} place="bottom" variant="dark">
           Show all the tokens found in the filenames that do not match an existing tag
         </ReactTooltip>
 
