@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactTooltip from 'react-tooltip';
+import { Tooltip as ReactTooltip } from 'react-tooltip';
 import Select from 'react-select';
 
 export default class AutoTagHeaderRowTokenCell extends React.Component {
@@ -58,7 +58,7 @@ export default class AutoTagHeaderRowTokenCell extends React.Component {
     let label = this.formatTagLabel(option);
 
     return (
-      <span data-tip data-for={this.getTooltipId()}>{label}</span>
+      <span data-tooltip-id={this.getTooltipId()}>{label}</span>
     )
 	}
 
@@ -112,7 +112,7 @@ export default class AutoTagHeaderRowTokenCell extends React.Component {
           />
           {
             this.props.tag &&
-            <ReactTooltip id={this.getTooltipId()} place="top" type="dark" effect="solid" class={"autotag_tooltip"}>
+            <ReactTooltip id={this.getTooltipId()} place="top" variant="dark" className={"autotag_tooltip"}>
               <ul>
                 <li><strong>ID:</strong> {this.props.tag.id}</li>
                 <li><strong>Value:</strong> {this.props.tag.value}</li>

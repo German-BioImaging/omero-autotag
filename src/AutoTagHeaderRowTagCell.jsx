@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactTooltip from 'react-tooltip';
+import { Tooltip as ReactTooltip } from 'react-tooltip';
 
 export default class AutoTagHeaderRowTagCell extends React.Component {
 
@@ -42,10 +42,9 @@ export default class AutoTagHeaderRowTagCell extends React.Component {
         <div className={'tag'}>
 
             <span className={"tag_button tag_button_unmatched"}
-               data-tip
-               data-for={tooltipID}>{tag.value + "\u00a0" + "(" + tag.id + ")"}
+              data-tooltip-id={tooltipID}>{tag.value + "\u00a0" + "(" + tag.id + ")"}
             </span>
-            <ReactTooltip id={tooltipID} place="top" type="dark" effect="solid" class={"autotag_tooltip"}>
+            <ReactTooltip id={tooltipID} place="top" variant="dark" className={"autotag_tooltip"}>
               <ul>
                 <li><strong>ID:</strong> {tag.id}</li>
                 <li><strong>Value:</strong> {tag.value}</li>
