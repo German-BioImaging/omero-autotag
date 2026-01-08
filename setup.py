@@ -33,7 +33,7 @@ MAINTAINER = "Tom Boissonnet"
 LICENSE = "AGPL-3.0"
 HOMEPAGE = "https://github.com/German-BioImaging/omero-autotag"
 
-REQUIREMENTS = ["omero-web>=5.6.0"]
+REQUIREMENTS = ["omero-web>=5.21.0"]
 
 
 def require_npm(command, strict=False):
