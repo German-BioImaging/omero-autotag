@@ -138,11 +138,13 @@ export default class AutoTagForm extends React.Component {
       return;
     }
 
+    const ids = Array.isArray(itemIds) ? itemIds : Array.from(itemIds || []);
+
     this.loadRequest = $.ajax({
       url: this.props.url,
       type: "POST",
       data: {
-        ids: itemIds,
+        ids: JSON.stringify(itemIds),
         itemType: itemType
       },
       dataType: 'json',

@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-from builtins import map, str
 from collections import defaultdict
 from copy import deepcopy
 import json
@@ -114,16 +113,21 @@ def create_tag(request, conn=None, **kwargs):
 def get_items(request, conn=None, **kwargs):
     # According to REST, this should be a GET, but because of the amount of
     # data being submitted, this is problematic
-    if not request.POST:
+    if request.method != "POST":
         return HttpResponseNotAllowed("Methods allowed: POST")
 
-    item_ids = request.POST.getlist("ids[]")
     itemType = request.POST.get("itemType", "image").capitalize()
 
-    if not item_ids:
-        return HttpResponseBadRequest("Item IDs required")
-
-    item_ids = list(map(int, item_ids))
+    try:
+        item_ids = json.loads(request.POST.get("ids") or b"[]")
+        if not isinstance(item_ids, list) or not item_ids:
+            return HttpResponseBadRequest("Item IDs required")
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest("Invalid request format")
+    try:
+        item_ids = list(map(int, item_ids))
+    except (TypeError, ValueError):
+        return HttpResponseBadRequest("Invalid ids; must be integers")
 
     group_id = request.session.get("active_group")
     if group_id is None:
@@ -205,5 +209,19 @@ def get_items(request, conn=None, **kwargs):
 
     # Get the users from this group for reference
     users = tree.marshal_experimenters(conn, group_id=group_id, page=None)
+
+    # Check if the owner of the tags are members of the current group
+    # If not, add "Missing User" entries for them
+    tags_owner_id_set = {t["ownerId"] for t in tags}
+    owner_id_set = {u["id"] for u in users}
+    for missing_owner in (tags_owner_id_set - owner_id_set):
+        users.append(
+            {
+                "id": missing_owner,
+                "omeName": "<hidden>",
+                "firstName": "<hidden>",
+                "lastName": "<hidden>"
+            }
+        )
 
     return JsonResponse({"tags": tags, "items": result_items, "users": users})
