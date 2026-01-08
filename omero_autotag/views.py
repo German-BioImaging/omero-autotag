@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-from builtins import map, str
 from collections import defaultdict
 from copy import deepcopy
 import json
