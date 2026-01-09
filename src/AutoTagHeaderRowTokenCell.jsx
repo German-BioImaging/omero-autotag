@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
-import Select from 'react-select';
+// lightweight custom dropdown used instead of react-select
 
 export default class AutoTagHeaderRowTokenCell extends React.Component {
 
@@ -12,6 +12,13 @@ export default class AutoTagHeaderRowTokenCell extends React.Component {
     this.selectMapping = this.selectMapping.bind(this);
     this.formatTagLabel = this.formatTagLabel.bind(this);
     this.selectGetOptionLabel = this.selectGetOptionLabel.bind(this);
+    this.toggleMenu = this.toggleMenu.bind(this);
+    this.handleDocumentClick = this.handleDocumentClick.bind(this);
+    this.handleOptionSelect = this.handleOptionSelect.bind(this);
+
+    this.state = {
+      menuOpen: false
+    };
   }
 
   isChecked() {
@@ -47,6 +54,35 @@ export default class AutoTagHeaderRowTokenCell extends React.Component {
     } else {
       this.props.newMapping(this.props.token)
     }
+  }
+
+  componentDidMount() {
+    document.addEventListener('click', this.handleDocumentClick);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('click', this.handleDocumentClick);
+  }
+
+  toggleMenu(e) {
+    e.stopPropagation();
+    this.setState({menuOpen: !this.state.menuOpen});
+  }
+
+  handleDocumentClick() {
+    if (this.state.menuOpen) {
+      this.setState({menuOpen: false});
+    }
+  }
+
+  handleOptionSelect(tag) {
+    // tag === undefined means New/Existing
+    if (tag === undefined) {
+      this.props.newMapping(this.props.token);
+    } else {
+      this.props.selectMapping(this.props.token, tag);
+    }
+    this.setState({menuOpen: false});
   }
 
   getTooltipId() {
@@ -99,16 +135,30 @@ export default class AutoTagHeaderRowTokenCell extends React.Component {
                  onChange={this.handleCheckedChangeAll} />
         </div>
         <div className={'tag'} >
-          <Select
-              name="tokenmapselect"
-              onChange={this.selectMapping}
-              options={options}
-              value={tag}
-              valueRenderer={this.selectGetOptionLabel}
-              searchable={false}
-              className={tagClassName}
-              placeholder="&nbsp; "
-          />
+          <div className={'tag_dropdown'} style={{position: 'relative', display: 'inline-block'}}>
+            <span className={tagClassName} onClick={this.toggleMenu} data-tooltip-id={tag ? this.getTooltipId() : undefined}>
+              { tag ? ("" + tag.value + "\u00a0(" + tag.id + ")") : '\u00a0' }
+              <span style={{marginLeft:3}}>▾</span>
+            </span>
+            { this.state.menuOpen &&
+              <div className={'tag_dropdown_menu'} style={{position:'absolute', top:'100%', left:0, zIndex:1000, background:'#fff', border:'1px solid #ccc', padding:'4px'}}>
+                {
+                  options.map((opt, idx) => {
+                    const optVal = opt.value; // possibleTag or undefined
+                    const label = (optVal !== undefined) ? (optVal.value + "\u00a0(" + optVal.id + ")") : null;
+                    return (
+                      <div key={idx}
+                           onClick={(e)=>{ e.stopPropagation(); this.handleOptionSelect(optVal); }}
+                           style={{padding:'4px 8px', cursor:'pointer', whiteSpace:'nowrap'}}
+                           data-tooltip-id={optVal ? this.getTooltipId() : undefined}>
+                        { optVal ? label : opt.label }
+                      </div>
+                    );
+                  })
+                }
+              </div>
+            }
+          </div>
           {
             this.props.tag &&
             <ReactTooltip id={this.getTooltipId()} place="top" variant="dark" className={"autotag_tooltip"}>
