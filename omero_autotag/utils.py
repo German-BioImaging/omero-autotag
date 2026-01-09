@@ -3,7 +3,7 @@ import omero
 from omero.rtypes import rlong
 
 
-def create_tag_annotations_links(conn, additions=[], removals=[]):
+def create_tag_annotations_links(conn, itemType, additions=[], removals=[]):
     """
     Links or unlinks existing Images with existing Tag annotations
 
@@ -11,11 +11,16 @@ def create_tag_annotations_links(conn, additions=[], removals=[]):
     @param additions:       List of tags to remove from images
     """
 
+    model_d = {
+        "Image": (omero.model.ImageI, omero.model.ImageAnnotationLinkI),
+        "Dataset": (omero.model.DatasetI, omero.model.DatasetAnnotationLinkI),
+    }
+
     new_links = []
     # Create a list of links to apply
     for addition in additions:
-        link = omero.model.ImageAnnotationLinkI()
-        link.parent = omero.model.ImageI(addition[0], False)
+        link = model_d[itemType][1]()
+        link.parent = model_d[itemType][0](addition[0], False)
         link.child = omero.model.TagAnnotationI(addition[1], False)
         new_links.append(link)
 
@@ -44,21 +49,21 @@ def create_tag_annotations_links(conn, additions=[], removals=[]):
     if len(removals) > 0:
         # Get existing links belonging to current user (all at once to save
         # on queries)
-        all_image_ids, all_tag_ids = list(zip(*removals))
+        all_item_ids, all_tag_ids = list(zip(*removals))
 
         params = omero.sys.Parameters()
         params.theFilter = omero.sys.Filter()
         params.theFilter.ownerId = rlong(conn.getUserId())
-        # This query gets all the relationships between these images and these
+        # This query gets all the relationships between these items and these
         # tags, otherwise we'd have to get them individually.
         links = conn.getAnnotationLinks(
-            "Image",
-            parent_ids=list(all_image_ids),
+            itemType,
+            parent_ids=list(all_item_ids),
             ann_ids=list(all_tag_ids),
             params=params,
         )
 
-        # The above returns more image->tag links that were specified for
+        # The above returns more item->tag links that were specified for
         # deletion, so only delete the appropriate ones
         for link in links:
             if (link.parent.id.val, link.child.id.val) in removals:

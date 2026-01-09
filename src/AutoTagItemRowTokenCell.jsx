@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default class AutoTagImageRowTokenCell extends React.Component {
+export default class AutoTagItemRowTokenCell extends React.Component {
 
   constructor() {
     super();
@@ -9,29 +9,29 @@ export default class AutoTagImageRowTokenCell extends React.Component {
     this.handleCheckedChange = this.handleCheckedChange.bind(this);
   }
 
-  // Only update an image row cell that has an updated image or new map for
+  // Only update an item row cell that has an updated item or new map for
   // this column
   shouldComponentUpdate(nextProps, nextState) {
     return (
-      // The image was updated AND this token is now checked/unchecked
+      // The item was updated AND this token is now checked/unchecked
       // whereas before it was unchecked/checked
       (
-        nextProps.image !== this.props.image &&
-        nextProps.image.checkedTokens.has(nextProps.token) !== this.props.image.checkedTokens.has(this.props.token)
+        nextProps.item !== this.props.item &&
+        nextProps.item.checkedTokens.has(nextProps.token) !== this.props.item.checkedTokens.has(this.props.token)
       ) ||
       // The mapping of this column changed
       nextProps.tag !== this.props.tag ||
-      // The image was updated AND this tag is now applied/unapplied
+      // The item was updated AND this tag is now applied/unapplied
       // whereas before it was unapplied/applied
       (
-        nextProps.image !== this.props.image &&
-        nextProps.image.tags.has(nextProps.tag) !== this.props.image.tags.has(this.props.tag)
+        nextProps.item !== this.props.item &&
+        nextProps.item.tags.has(nextProps.tag) !== this.props.item.tags.has(this.props.tag)
       )
     );
   }
 
   isTagged() {
-    if (this.props.tag !== null && this.props.image.tags.has(this.props.tag)) {
+    if (this.props.tag !== null && this.props.item.tags.has(this.props.tag)) {
       return true;
     }
     return false;
@@ -39,7 +39,7 @@ export default class AutoTagImageRowTokenCell extends React.Component {
   }
 
   isChecked() {
-    return this.props.image.checkedTokens.has(this.props.token);
+    return this.props.item.checkedTokens.has(this.props.token);
   }
 
   isDisabled() {
@@ -49,12 +49,12 @@ export default class AutoTagImageRowTokenCell extends React.Component {
     }
 
     // No permissions to annotate
-    return !(this.props.tag.canAnnotate() && this.props.image.canAnnotate());
+    return !(this.props.tag.canAnnotate() && this.props.item.canAnnotate());
 
   }
 
   handleCheckedChange() {
-    this.props.cellCheckedChange(this.props.image, this.props.token);
+    this.props.cellCheckedChange(this.props.item, this.props.token);
   }
 
   render() {

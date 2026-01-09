@@ -2,16 +2,40 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import AutoTagHeaderRow from './AutoTagHeaderRow';
-import AutoTagImageRow from './AutoTagImageRow';
+import AutoTagItemRow from './AutoTagItemRow';
 
 export default class AutoTagForm extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      sortColumn: 'name',
+      sortDirection: 'asc' // 'asc' or 'desc'
+    };
+    this.handleSort = this.handleSort.bind(this);
+  }
+
+  handleSort(column) {
+    if (this.state.sortColumn === column) {
+      // Toggle direction if clicking the same column
+      this.setState({
+        sortDirection: this.state.sortDirection === 'asc' ? 'desc' : 'asc'
+      });
+    } else {
+      // Set new column and default to ascending
+      this.setState({
+        sortColumn: column,
+        sortDirection: 'asc'
+      });
+    }
+  }
 
   shouldComponentUpdate(nextProps, nextState) {
     // If it is a change in the required token cardinality (and unmapped tags are displayed)
     if (
         this.props.showUnmapped &&
         nextProps.requiredTokenCardinality != this.props.requiredTokenCardinality &&
-        this.props.images === nextProps.images
+        this.props.items === nextProps.items
     ) {
       // Ensure it would actually result in a change of number of tags displayed
       return nextProps.tokenMap.size !== this.props.tokenMap.size;
@@ -23,27 +47,39 @@ export default class AutoTagForm extends React.Component {
 
   render() {
 
-    // Sort the rows by name, then ID
-    let rowNodes = [...this.props.images].sort((a, b) => {
-      let caselessA = a.name.toLowerCase();
-      let caselessB = b.name.toLowerCase();
+    // Sort the rows based on the current sort column and direction
+    let rowNodes = [...this.props.items].sort((a, b) => {
+      let compareValue = 0;
 
-      if (caselessA < caselessB) {
-        return -1;
+      if (this.state.sortColumn === 'name') {
+        let caselessA = a.name.toLowerCase();
+        let caselessB = b.name.toLowerCase();
+
+        if (caselessA < caselessB) {
+          compareValue = -1;
+        } else if (caselessA > caselessB) {
+          compareValue = 1;
+        } else {
+          // If names are equal, sort by ID
+          if (a.id < b.id) {
+            compareValue = -1;
+          } else if (a.id > b.id) {
+            compareValue = 1;
+          }
+        }
+      } else if (this.state.sortColumn === 'id') {
+        if (a.id < b.id) {
+          compareValue = -1;
+        } else if (a.id > b.id) {
+          compareValue = 1;
+        }
       }
-      if (caselessA > caselessB) {
-        return 1;
-      }
-      if (a.id < b.id) {
-        return -1;
-      }
-      if (a.id > b.id) {
-        return 1
-      }
-      return 0;
-    }).map(image =>
-        <AutoTagImageRow key={image.id}
-                         image={image}
+
+      // Apply sort direction
+      return this.state.sortDirection === 'asc' ? compareValue : -compareValue;
+    }).map(item =>
+        <AutoTagItemRow key={item.id}
+                         item={item}
                          tokenMap={this.props.tokenMap}
                          unmappedTags={this.props.unmappedTags}
                          cellCheckedChange={this.props.cellCheckedChange}
@@ -65,9 +101,13 @@ export default class AutoTagForm extends React.Component {
                               unmappedTags={this.props.unmappedTags}
                               selectMapping={this.props.selectMapping}
                               newMapping={this.props.newMapping}
-                              images={this.props.images}
+                              items={this.props.items}
+                              itemType={this.props.itemType}
                               handleCheckedChangeAll={this.props.handleCheckedChangeAll}
-                              showUnmapped={this.props.showUnmapped} />
+                              showUnmapped={this.props.showUnmapped}
+                              sortColumn={this.state.sortColumn}
+                              sortDirection={this.state.sortDirection}
+                              onSort={this.handleSort} />
 
           <tbody>
             {rowNodes}

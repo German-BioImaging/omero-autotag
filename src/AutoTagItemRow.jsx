@@ -1,18 +1,18 @@
 import React from 'react';
-import AutoTagImageRowTokenCell from './AutoTagImageRowTokenCell';
-import AutoTagImageRowTagCell from './AutoTagImageRowTagCell';
+import AutoTagItemRowTokenCell from './AutoTagItemRowTokenCell';
+import AutoTagItemRowTagCell from './AutoTagItemRowTagCell';
 
-export default class AutoTagImageRow extends React.Component {
+export default class AutoTagItemRow extends React.Component {
 
-  // Only update an image row that has had a modified state
+  // Only update an item row that has had a modified state
   shouldComponentUpdate(nextProps, nextState) {
     return (nextProps.showUnmapped !== this.props.showUnmapped ||
-            nextProps.image !== this.props.image ||
+            nextProps.item !== this.props.item ||
             nextProps.tokenMap !== this.props.tokenMap);
   }
 
   render() {
-    let image = this.props.image;
+    let item = this.props.item;
     let tokenMap = this.props.tokenMap;
     let unmappedTags = this.props.unmappedTags;
     let showUnmapped = this.props.showUnmapped;
@@ -23,8 +23,8 @@ export default class AutoTagImageRow extends React.Component {
 
       if (showUnmapped || token.possible.size > 0) {
         return (
-          <AutoTagImageRowTokenCell key={token.value}
-                                    image={image}
+          <AutoTagItemRowTokenCell key={token.value}
+                                    item={item}
                                     token={token}
                                     tag={tag}
                                     cellCheckedChange={this.props.cellCheckedChange} />
@@ -33,8 +33,8 @@ export default class AutoTagImageRow extends React.Component {
     })
 
     let cellNodesTag = [...unmappedTags].map(tag =>
-        <AutoTagImageRowTagCell key={tag.id}
-                                image={image}
+        <AutoTagItemRowTagCell key={tag.id}
+                                item={item}
                                 tag={tag}
                                 cellCheckedChange={this.props.cellCheckedChange} />
     );
@@ -43,7 +43,7 @@ export default class AutoTagImageRow extends React.Component {
       <tr>
         {cellNodesToken}
         {cellNodesTag}
-        <td style={{whiteSpace: 'nowrap'}}>{image.clientPath}<br/>{image.name}&nbsp;(id:{image.id})</td>
+        <td style={{whiteSpace: 'nowrap'}}>{item.clientPath?<div>{item.clientPath}<br/>{item.name}&nbsp;(id:{item.id})</div>:`${item.name} (id:${item.id})`}</td>
       </tr>
     );
   }

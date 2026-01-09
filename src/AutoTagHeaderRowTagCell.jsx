@@ -13,8 +13,8 @@ export default class AutoTagHeaderRowTagCell extends React.Component {
 
   isChecked() {
 
-    for (let image of this.props.images) {
-      if (!image.checkedTags.has(this.props.tag)) {
+    for (let item of this.props.items) {
+      if (!item.checkedTags.has(this.props.tag)) {
         return false;
       }
     }

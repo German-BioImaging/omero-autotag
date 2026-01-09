@@ -17,7 +17,7 @@ export default class AutoTagHeaderRow extends React.Component {
                                      tokenMap={this.props.tokenMap}
                                      selectMapping={this.props.selectMapping}
                                      newMapping={this.props.newMapping}
-                                     images={this.props.images}
+                                     items={this.props.items}
                                      handleCheckedChangeAll={this.props.handleCheckedChangeAll}
                                      key={token.value} />
         )
@@ -27,17 +27,27 @@ export default class AutoTagHeaderRow extends React.Component {
 
     let cellNodesTag = [...this.props.unmappedTags].map(tag =>
       <AutoTagHeaderRowTagCell tag={tag}
-                               images={this.props.images}
+                               items={this.props.items}
                                handleCheckedChangeAll={this.props.handleCheckedChangeAll}
                                key={tag.id} />
     );
 
+    // Get the sort arrow for the item name column
+    let sortArrow = '';
+    if (this.props.sortColumn === 'name') {
+      sortArrow = this.props.sortDirection === 'asc' ? ' ▲' : ' ▼';
+    }
+
     return (
-      <thead>
+      <thead className="sticky-header">
         <tr>
           {cellNodesToken}
           {cellNodesTag}
-          <th>Original Import Path<br/>Image Name</th>
+          <th style={{ cursor: 'pointer', userSelect: 'none' }}
+              onClick={() => this.props.onSort('name')}>
+            {this.props.itemType==="image"?<div><span>Original Import Path</span><br/><span>Item Name</span></div>:"Item Name"}
+            {sortArrow}
+          </th>
         </tr>
       </thead>
     );

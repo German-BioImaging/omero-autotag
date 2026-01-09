@@ -1,10 +1,10 @@
-class Image {
+class Item {
   constructor(id, name, owner, permissions, clientPath, tags, tokens=new Set(), checkedTokens=new Set(), checkedTags=new Set()) {
     this.id = id
     this.name = name;
     this.owner = owner;
     this.permissions = permissions;
-    this.clientPath = clientPath;
+    this.clientPath = clientPath;  // only for images
     this.tags = tags;
     this.tokens = tokens;
     this.checkedTokens = checkedTokens;
@@ -27,7 +27,7 @@ class Image {
   }
 
   clone() {
-    return new Image(
+    return new Item(
       this.id,
       this.name,
       this.owner,
@@ -42,4 +42,4 @@ class Image {
 
 }
 
-export default Image;
+export default Item;

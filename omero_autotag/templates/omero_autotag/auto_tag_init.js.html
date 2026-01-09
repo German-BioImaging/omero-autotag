@@ -4,20 +4,23 @@
 
 $(function() {
   var pluginIndex = {{ forloop.counter }};
-  var url="{% url 'webtagging_get_image_detail_and_tags' %}";
-  var urlUpdate="{% url 'webtagging_process_update' %}";
-  var urlCreateTag="{% url 'webtagging_create_tag' %}";
+  var url="{% url 'autotag_get_items' %}";
+  var urlUpdate="{% url 'autotag_process_update' %}";
+  var urlCreateTag="{% url 'autotag_create_tag' %}";
 
-
-  var reactRender = function(datatree, selectedNode) {
-    var imageIds = [];
-
+  var reactRender = function(datatree, itemType, selectedNode) {
+    var itemIds = [];
     $.each(selectedNode.children, function(index, child) {
-      imageIds.push(datatree.get_node(child).data.obj.id);
+      if (selectedNode.type === "tag") {
+        var childNode = datatree.get_node(child);
+        if (childNode.type !== "image") {
+          // Skip non-image children of a tag
+          return;
+        }
+      }
+      itemIds.push(datatree.get_node(child).data.obj.id);
     });
-
-    autotagform.default(imageIds, url, urlUpdate, urlCreateTag);
-
+    autotagform.default(itemIds, itemType, url, urlUpdate, urlCreateTag); // calls autotagform in Main.jsx
   };
 
   $("#auto_tag_panel").omeroweb_center_plugin({
@@ -29,7 +32,7 @@ $(function() {
       var datatree = $.jstree.reference('#dataTree');
       if (!datatree) return;
 
-      // We use the tree to access selected objects, since we can traverse
+      // We use the tree to access selected items, since we can traverse
       // to check parents etc...
       // Note: We do not use the parameters selected, dtype or oid as
       // it is easier to use the tree directly as these do not refer to
@@ -43,27 +46,36 @@ $(function() {
       // TODO Handle multi-selection
       var selected = tree_selected[0];
 
-      // If the selected object is an image, return that image and its siblings
+      // If the selected item is an image, return that image and its siblings
       if (selected.type === 'image') {
         // Set selected to be the parent so that lastSelected can be compared
         // to the container
         selected = datatree.get_node(datatree.get_parent(selected));
-        reactRender(datatree, selected);
+        reactRender(datatree, "image", selected);
       }
 
-      // If the selected object is a Dataset, tag or orphaned return its children
+      // If the selected item is a Dataset, tag or orphaned return its children
       else if (selected.type === 'dataset' || selected.type === 'orphaned' || selected.type === 'tag'){
         // Make sure that the dataset is loaded
         if (!datatree.is_loaded(selected)) {
           datatree.load_node(selected, function(node, status){
-            reactRender(datatree, datatree.get_node(node));
+            reactRender(datatree, "image", datatree.get_node(node));
           });
         } else {
-          reactRender(datatree, datatree.get_node(selected));
+          reactRender(datatree, "image", datatree.get_node(selected));
+        }
+      } else if (selected.type === 'project') {
+        // For a project, load the datasets underneath it
+        if (!datatree.is_loaded(selected)) {
+          datatree.load_node(selected, function(node, status){
+            reactRender(datatree, "dataset", datatree.get_node(node));
+          });
+        } else {
+          reactRender(datatree, "dataset", datatree.get_node(selected));
         }
       }
     },
-    supported_obj_types: ['dataset', 'image', 'orphaned', 'tag']
+    supported_obj_types: ['dataset', 'image', 'orphaned', 'tag', 'project'],
   });
 });
 
