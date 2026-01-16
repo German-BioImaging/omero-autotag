@@ -45,12 +45,15 @@ export default class AutoTagToolbar extends React.Component {
         className={'toolbar'}
       >
         <span
-          data-tip
-          data-for={'tooltip-toolbar-show-all'}
+          data-tooltip-id={'tooltip-toolbar-obj-type'}
           style={{float: 'left', marginLeft: '10px', fontSize: '12px', fontWeight: 'bold', lineHeight: '29px'}}
         >
           Tagging {this.props.itemType}s
         </span>
+
+        <ReactTooltip id={'tooltip-toolbar-obj-type'} place="bottom" variant="dark" offset={5}>
+          The object type currently being tagged. Selecting a Project will tag Datasets, selecting a Dataset or an Image will tag Images.
+        </ReactTooltip>
 
         {
           this.props.showUnmapped &&
@@ -72,13 +75,13 @@ export default class AutoTagToolbar extends React.Component {
                    style={{
                      cursor: 'pointer'
                    }} />
+            {
+              this.props.showUnmapped &&
+              <ReactTooltip id={'tooltip-toolbar-slider'} place="bottom" variant="dark" offset={-4} style={{lineHeight: '1'}}>
+                Hide columns if token is found on fewer than this number of items.
+              </ReactTooltip>
+            }
           </div>
-        }
-        {
-          this.props.showUnmapped &&
-          <ReactTooltip id={'tooltip-toolbar-slider'} place="bottom" variant="dark">
-            Hide columns if token is found on fewer than this number of items.
-          </ReactTooltip>
         }
 
         <span
@@ -88,7 +91,7 @@ export default class AutoTagToolbar extends React.Component {
           Split on&nbsp;
         </span>
 
-        <ReactTooltip id={'tooltip-toolbar-split-chars'} place="bottom" variant="dark">
+        <ReactTooltip id={'tooltip-toolbar-split-chars'} place="bottom" variant="dark" offset={5}>
           Characters used to split the path and names to find relevant tags.
         </ReactTooltip>
 
@@ -107,7 +110,7 @@ export default class AutoTagToolbar extends React.Component {
           Show All Potential Tags
         </span>
 
-        <ReactTooltip id={'tooltip-toolbar-show-all'} place="bottom" variant="dark">
+        <ReactTooltip id={'tooltip-toolbar-show-all'} place="bottom" variant="dark" offset={5}>
           Show all the tokens found in the filenames that do not match an existing tag
         </ReactTooltip>
 
