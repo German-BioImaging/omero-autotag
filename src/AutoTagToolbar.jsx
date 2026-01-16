@@ -106,7 +106,7 @@ export default class AutoTagToolbar extends React.Component {
 
         <span
           data-tooltip-id={'tooltip-toolbar-show-all'}
-          style={{fontSize: '12px', fontWeight: 'bold', lineHeight: '29px'}}
+          style={{fontSize: '12px', fontWeight: 'bold', lineHeight: '29px', marginRight: '5px'}}
         >
           Show All Potential Tags
         </span>
@@ -119,7 +119,9 @@ export default class AutoTagToolbar extends React.Component {
                checked={this.props.showUnmapped}
                onChange={this.toggleUnmapped}
                style={{
-                marginRight: '20px'
+                verticalAlign: 'middle',
+                marginRight: '20px',
+                cursor: 'pointer'
               }} />
 
         <input type="submit"
