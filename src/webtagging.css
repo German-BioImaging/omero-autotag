@@ -292,7 +292,7 @@
 
 #auto_tag_panel .react-select__placeholder,
 #auto_tag_panel .react-select__single-value {
-  padding-left: 7px;
+  padding-left: 5px;
   padding-right: 5px;
   white-space: nowrap;
   position: inherit;
@@ -389,13 +389,20 @@
   vertical-align: middle;
   white-space: nowrap;
   padding-right: 0px;
-  padding-left: 0px;
   padding-bottom: 0px;
+}
+
+#auto_tag_panel .react-select__clear-indicator,
+#auto_tag_panel .react-select__dropdown-indicator,
+#auto_tag_panel .react-select__indicators {
+  padding-left: 0px;
 }
 
 #auto_tag_panel .react-select__dropdown-indicator svg {
   width: 10px;
   height: 10px;
+  color: hsl(205, 30%, 35%);
+  fill: currentColor;
 }
 
 #auto_tag_panel .react-select__clear-indicator svg {
