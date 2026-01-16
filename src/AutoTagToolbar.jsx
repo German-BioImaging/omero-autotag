@@ -54,36 +54,32 @@ export default class AutoTagToolbar extends React.Component {
 
         {
           this.props.showUnmapped &&
-          <span
-            data-tooltip-id={'tooltip-toolbar-slider'}
-            style={{
-              float: 'left',
-              marginLeft: '20px',
-              fontSize: '12px',
-              fontWeight: 'bold',
-              lineHeight: '29px'
-            }}
-          >Rarity Threshold&nbsp;&nbsp;{this.props.requiredTokenCardinality}</span>
+          <div style={{display: 'flex', alignItems: 'center', float: 'left', marginLeft: '20px', marginRight: '20px', lineHeight: '29px'}}>
+            <span
+              data-tooltip-id={'tooltip-toolbar-slider'}
+              style={{
+                fontSize: '12px',
+                fontWeight: 'bold',
+                marginRight: '10px'
+              }}
+            >Rarity Threshold&nbsp;&nbsp;{this.props.requiredTokenCardinality}</span>
+            <input className='slider'
+                   type='range'
+                   onChange={this.handleChangeRequiredTokenCardinality}
+                   value={this.props.requiredTokenCardinality}
+                   min={1}
+                   max={this.props.maxTokenCardinality}
+                   style={{
+                     cursor: 'pointer'
+                   }} />
+          </div>
         }
         {
           this.props.showUnmapped &&
-          <input className='slider'
-                 type='range'
-                 onChange={this.handleChangeRequiredTokenCardinality}
-                 value={this.props.requiredTokenCardinality}
-                 min={1}
-                 max={this.props.maxTokenCardinality}
-                 style={{
-                   float: 'left',
-                   marginLeft: '10px',
-                   lineHeight: '29px',
-                   paddingTop: '5px'
-                 }} />
+          <ReactTooltip id={'tooltip-toolbar-slider'} place="bottom" variant="dark">
+            Hide columns if token is found on fewer than this number of items.
+          </ReactTooltip>
         }
-
-        <ReactTooltip id={'tooltip-toolbar-slider'} place="bottom" variant="dark">
-          Hide columns if token is found on fewer than this number of items.
-        </ReactTooltip>
 
         <span
           data-tooltip-id={'tooltip-toolbar-split-chars'}
