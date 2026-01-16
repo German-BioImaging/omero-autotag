@@ -365,6 +365,14 @@
 #auto_tag_panel .react-select__control {
   display: inline !important;
   white-space: nowrap !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+#auto_tag_panel .react-select__control:focus,
+#auto_tag_panel .react-select__control:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 #auto_tag_panel .react-select__value-container {
