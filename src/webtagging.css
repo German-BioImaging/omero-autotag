@@ -430,7 +430,7 @@
 	background:linear-gradient(to top, hsl(205,65%,80%) 0%,hsl(205,70%,75%) 100%); /* W3C */
 
 	text-decoration:none;
-	text-shadow: 0 1px 0 rgba(255,255,255,.4);
+	/*text-shadow: 0 1px 0 rgba(255,255,255,.4);*/
 	color:hsl(205,30%,30%);
 }
 

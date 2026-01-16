@@ -11,7 +11,6 @@ export default class AutoTagHeaderRowTokenCell extends React.Component {
     this.handleCheckedChangeAll = this.handleCheckedChangeAll.bind(this);
     this.selectMapping = this.selectMapping.bind(this);
     this.formatTagLabel = this.formatTagLabel.bind(this);
-    this.selectGetOptionLabel = this.selectGetOptionLabel.bind(this);
 
     this.state = {
       menuOpen: false
@@ -44,21 +43,21 @@ export default class AutoTagHeaderRowTokenCell extends React.Component {
   }
 
   selectMapping(option) {
-    if (option === null) {
-      this.props.selectMapping(this.props.token, null);
-    } else if (option.value !== undefined) {
-      this.props.selectMapping(this.props.token, option.value);
-    } else {
-      this.props.newMapping(this.props.token)
-    }
+  if (!option) {
+    this.props.selectMapping(this.props.token, null);
+    return;
   }
+
+  if (option.value.id === '__new__') {
+    this.props.newMapping(this.props.token);
+    return;
+  }
+
+  this.props.selectMapping(this.props.token, option.value);
+}
 
   getTooltipId() {
     return 'tooltip-token-' + this.props.token.value;
-  }
-
-  selectGetOptionLabel(option) {
-    return this.formatTagLabel(option.value);
   }
 
   render() {
@@ -76,12 +75,8 @@ export default class AutoTagHeaderRowTokenCell extends React.Component {
       }
     )
 
-    let newExisting = (
-      <span style={{color: "blue", fontWeight: "bold", borderStyle: "solid"}}>New/Existing Tag</span>
-    );
-
     options.push({
-      value: undefined,
+      value: { id: '__new__' },
       label: "New/Existing Tag"
     });
 
@@ -104,13 +99,26 @@ export default class AutoTagHeaderRowTokenCell extends React.Component {
             onChange={this.selectMapping}
             options={options}
             value={options.find(o => o.value?.id === tag?.id)}
-            getOptionLabel={(option) => this.formatTagLabel(option.value)}
-            getOptionValue={(option) => String(option.value?.id)}
+            getOptionLabel={(option) =>
+              option.value.id === '__new__'
+                ? 'New / Existing Tag'
+                : this.formatTagLabel(option.value)
+            }
+            getOptionValue={(option) => option.value.id}
             isSearchable={false}
             isClearable={true}
             className={tagClassName}
             placeholder=" "
             classNamePrefix="react-select"
+            styles={{
+              option: (provided, state) => ({
+                ...provided,
+                // Check if this is the "New / Existing Tag" option
+                color: state.data.value.id === '__new__' ? 'blue' : provided.color,
+                fontWeight: state.data.value.id === '__new__' ? 'bold' : provided.fontWeight,
+                borderStyle: state.data.value.id === '__new__' ? 'solid' : provided.borderStyle,
+              })
+            }}
           />
           {
             this.props.tag &&
