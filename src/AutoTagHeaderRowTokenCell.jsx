@@ -93,7 +93,7 @@ export default class AutoTagHeaderRowTokenCell extends React.Component {
                  disabled={this.isDisabled()}
                  onChange={this.handleCheckedChangeAll} />
         </div>
-        <div className={'tag'} >
+        <div className={'tag'} data-tooltip-id={this.getTooltipId()}>
           <Select
             name="tokenmapselect"
             onChange={this.selectMapping}
@@ -113,7 +113,6 @@ export default class AutoTagHeaderRowTokenCell extends React.Component {
             styles={{
               option: (provided, state) => ({
                 ...provided,
-                // Check if this is the "New / Existing Tag" option
                 color: state.data.value.id === '__new__' ? 'blue' : provided.color,
                 fontWeight: state.data.value.id === '__new__' ? 'bold' : provided.fontWeight,
                 borderStyle: state.data.value.id === '__new__' ? 'solid' : provided.borderStyle,
@@ -122,7 +121,12 @@ export default class AutoTagHeaderRowTokenCell extends React.Component {
           />
           {
             this.props.tag &&
-            <ReactTooltip id={this.getTooltipId()} place="top" variant="dark" className={"autotag_tooltip"}>
+            <ReactTooltip
+              id={this.getTooltipId()}
+              place="top"
+              variant="dark"
+              className={"autotag_tooltip"}
+            >
               <ul>
                 <li><strong>ID:</strong> {this.props.tag.id}</li>
                 <li><strong>Value:</strong> {this.props.tag.value}</li>
