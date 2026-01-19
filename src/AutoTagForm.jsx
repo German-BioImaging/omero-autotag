@@ -103,8 +103,13 @@ export default class AutoTagForm extends React.Component {
       });
       return datasetIds;
     } else if (itemType === 'Project') {
-      // For projects, use selected projects
+      // For projects, use both children that are projects and selected projects
       const projectIds = [];
+      childrenObjects.forEach(obj => {
+        if (obj.type === 'project') {
+          projectIds.push(obj.id);
+        }
+      });
       selectedObjects.forEach(obj => {
         if (obj.type === 'project') {
           projectIds.push(obj.id);

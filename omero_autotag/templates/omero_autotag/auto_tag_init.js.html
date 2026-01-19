@@ -9,7 +9,7 @@ $(function() {
   var urlUpdate="{% url 'autotag_process_update' %}";
   var urlCreateTag="{% url 'autotag_create_tag' %}";
 
-  var reactRender = function(datatree, selectedNodes, availableTypes, defaultType) {
+  var reactRender = function(datatree, selectedNodes) {
     // Collect selected objects with their IDs
     var selectedObjects = [];
     var nodes = Array.isArray(selectedNodes) ? selectedNodes : [selectedNodes];
@@ -30,22 +30,38 @@ $(function() {
       selectedNode.children.forEach(function(childId) {
         var childNode = datatree.get_node(childId);
 
-        // Skip non-image children of a tag
-        if (selectedNode.type === "tag" && childNode.type !== "image") {
+        // Skip non-supported children of a tag
+        if (selectedNode.type === "tag" && ($.inArray(childNode.type, ["image", "dataset", "project"]) < 0)) {
           return;
         }
 
-        // Avoid duplicates
-        if (!processedIds.has(childNode.data.obj.id)) {
+        // Avoid duplicates based on id and type combination
+        var uniqueKey = childNode.data.obj.id + '-' + childNode.type;
+        if (!processedIds.has(uniqueKey)) {
           childrenObjects.push({
             id: childNode.data.obj.id,
             type: childNode.type,
             name: childNode.text
           });
-          processedIds.add(childNode.data.obj.id);
+          processedIds.add(uniqueKey);
         }
       });
     });
+
+    var availableTypes = ['Project', 'Dataset', 'Image'];
+    // Filter availableTypes to only include types that exist in childrenObjects or selectedObjects
+    var objectTypes = new Set([selectedObjects[0].type]);
+    childrenObjects.forEach(function(obj) { objectTypes.add(obj.type); });
+
+    availableTypes = availableTypes.filter(function(type) {
+      return objectTypes.has(type.toLowerCase());
+    });
+
+    if (availableTypes.length === 0) {
+      return;
+    }
+    // Last type as default, prioritizing Image > Dataset > Project
+    defaultType = availableTypes[availableTypes.length - 1]
 
     // Call the autotagform with structured data
     autotagform.default(
@@ -77,38 +93,6 @@ $(function() {
 
       console.log("AutoTag selected:", tree_selected);
 
-      // Determine available types and default type based on selection
-      var availableTypes = [];
-      var defaultType = null;
-      var hasImages = tree_selected.some(node => node.type === 'image');
-      var hasDatasets = tree_selected.some(node => node.type === 'dataset');
-      var hasProjects = tree_selected.some(node => node.type === 'project');
-      var hasOrphaned = tree_selected.some(node => node.type === 'orphaned');
-      var hasTags = tree_selected.some(node => node.type === 'tag');
-
-      // Determine available item types based on selection
-      if (hasProjects) {
-        // Project selection: can tag Projects or Datasets
-        availableTypes = ['Project', 'Dataset'];
-        defaultType = 'Dataset';
-      } else if (hasDatasets) {
-        // Dataset selection: can tag Datasets or Images
-        availableTypes = ['Dataset', 'Image'];
-        defaultType = 'Image';
-      } else if (hasImages) {
-        // Image selection: can tag selected Images
-        availableTypes = ['Image'];
-        defaultType = 'Image';
-      } else if (hasOrphaned) {
-        // Orphaned selection: can only tag Images
-        availableTypes = ['Image'];
-        defaultType = 'Image';
-      } else if (hasTags) {
-        // Tag selection: can tag Projects, Datasets, or Images
-        availableTypes = ['Project', 'Dataset', 'Image'];
-        defaultType = 'Image';
-      }
-
       // Ensure all selected nodes are loaded
       var nodesToLoad = [];
       tree_selected.forEach(function(node) {
@@ -119,7 +103,7 @@ $(function() {
 
       if (nodesToLoad.length === 0) {
         // All nodes already loaded
-        reactRender(datatree, tree_selected, availableTypes, defaultType);
+        reactRender(datatree, tree_selected);
       } else {
         // Load all unloaded nodes, then render
         var loadedCount = 0;
@@ -127,7 +111,7 @@ $(function() {
 
         var checkAllLoaded = function() {
           if (loadedCount === totalToLoad) {
-            reactRender(datatree, tree_selected, availableTypes, defaultType);
+            reactRender(datatree, tree_selected);
           }
         };
 
@@ -139,15 +123,18 @@ $(function() {
         });
       }
     },
+
     plugin_enabled: function(selected){
       // Required for multi-selection support
       // supported_obj_types only works for single selection
-      if (selected.length == 0) return false;
+      if (selected.length == 0) {
+        return false;
+      }
       var dtype = selected[0]['id'].split('-')[0];
-      if (selected.length > 1) {
-          return ($.inArray(dtype, ["image", "dataset"]) > -1);
+      if (selected.length > 0) {
+          return ($.inArray(dtype, ["image", "dataset", "project", "tag", "orphaned"]) > -1);
       } else {
-          return ($.inArray(dtype, ["image", "dataset", "tag", "orphaned", "project"]) > -1);
+          return false;
       }
     }
   });
