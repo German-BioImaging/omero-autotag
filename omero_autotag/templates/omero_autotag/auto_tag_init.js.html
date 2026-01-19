@@ -135,7 +135,7 @@ $(function() {
       }
       var dtype = selected[0]['id'].split('-')[0];
       if (selected.length > 0) {
-          return ($.inArray(dtype, ["image", "dataset", "project", "screen", "plate", "acquisition", "tag", "orphaned"]) > -1);
+          return ($.inArray(dtype, ["image", "dataset", "project", "screen", "plate", "acquisition", "tag", "orphaned", "experimenter"]) > -1);
       } else {
           return false;
       }
