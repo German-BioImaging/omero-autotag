@@ -74,50 +74,22 @@ export default class AutoTagForm extends React.Component {
     const childrenObjects = this.props.childrenObjects || [];
     const selectedObjects = this.props.selectedObjects || [];
 
-    if (itemType === 'Image') {
-      // For images, use both children that are images and selected images
-      const imageIds = [];
-      childrenObjects.forEach(obj => {
-        if (obj.type === 'image') {
-          imageIds.push(obj.id);
-        }
-      });
-      selectedObjects.forEach(obj => {
-        if (obj.type === 'image') {
-          imageIds.push(obj.id);
-        }
-      });
-      return imageIds;
-    } else if (itemType === 'Dataset') {
-      // For datasets, use both children that are datasets and selected datasets
-      const datasetIds = [];
-      childrenObjects.forEach(obj => {
-        if (obj.type === 'dataset') {
-          datasetIds.push(obj.id);
-        }
-      });
-      selectedObjects.forEach(obj => {
-        if (obj.type === 'dataset') {
-          datasetIds.push(obj.id);
-        }
-      });
-      return datasetIds;
-    } else if (itemType === 'Project') {
-      // For projects, use both children that are projects and selected projects
-      const projectIds = [];
-      childrenObjects.forEach(obj => {
-        if (obj.type === 'project') {
-          projectIds.push(obj.id);
-        }
-      });
-      selectedObjects.forEach(obj => {
-        if (obj.type === 'project') {
-          projectIds.push(obj.id);
-        }
-      });
-      return projectIds;
-    }
+    itemType = itemType.toLowerCase();
 
+    if ($.inArray(itemType, ["image", "dataset", "project", "screen", "plate"]) > -1) {
+      const itemIds = [];
+      childrenObjects.forEach(obj => {
+        if (obj.type === itemType) {
+          itemIds.push(obj.id);
+        }
+      });
+      selectedObjects.forEach(obj => {
+        if (obj.type === itemType) {
+          itemIds.push(obj.id);
+        }
+      });
+      return itemIds;
+    }
     return [];
   }
 

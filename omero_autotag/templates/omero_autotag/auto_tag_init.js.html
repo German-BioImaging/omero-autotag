@@ -31,7 +31,7 @@ $(function() {
         var childNode = datatree.get_node(childId);
 
         // Skip non-supported children of a tag
-        if (selectedNode.type === "tag" && ($.inArray(childNode.type, ["image", "dataset", "project"]) < 0)) {
+        if (selectedNode.type === "tag" && ($.inArray(childNode.type, ["image", "dataset", "project", "screen", "plate"]) < 0)) {
           return;
         }
 
@@ -48,7 +48,7 @@ $(function() {
       });
     });
 
-    var availableTypes = ['Project', 'Dataset', 'Image'];
+    var availableTypes = ['Screen', 'Plate', 'Project', 'Dataset', 'Image'];
     // Filter availableTypes to only include types that exist in childrenObjects or selectedObjects
     var objectTypes = new Set([selectedObjects[0].type]);
     childrenObjects.forEach(function(obj) { objectTypes.add(obj.type); });
@@ -132,7 +132,7 @@ $(function() {
       }
       var dtype = selected[0]['id'].split('-')[0];
       if (selected.length > 0) {
-          return ($.inArray(dtype, ["image", "dataset", "project", "tag", "orphaned"]) > -1);
+          return ($.inArray(dtype, ["image", "dataset", "project", "screen", "plate", "tag", "orphaned"]) > -1);
       } else {
           return false;
       }
