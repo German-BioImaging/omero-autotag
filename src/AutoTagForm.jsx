@@ -520,7 +520,7 @@ export default class AutoTagForm extends React.Component {
       type: "POST",
       data: {
         change: JSON.stringify(changes),
-        itemType: this.props.itemType
+        itemType: this.state.selectedItemType
       },
       success: function(data) {
         // No action required
