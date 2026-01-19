@@ -76,7 +76,12 @@ export default class AutoTagForm extends React.Component {
 
     itemType = itemType.toLowerCase();
 
-    if ($.inArray(itemType, ["image", "dataset", "project", "screen", "plate"]) > -1) {
+    // PlateAcquisition is displayed as 'Run' in the UI
+    if (itemType === 'run') {
+      itemType = 'acquisition';
+    }
+
+    if ($.inArray(itemType, ["image", "dataset", "project", "screen", "plate", 'acquisition']) > -1) {
       const itemIds = [];
       childrenObjects.forEach(obj => {
         if (obj.type === itemType) {
@@ -88,6 +93,7 @@ export default class AutoTagForm extends React.Component {
           itemIds.push(obj.id);
         }
       });
+
       return itemIds;
     }
     return [];

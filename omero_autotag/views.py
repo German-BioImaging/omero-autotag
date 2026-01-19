@@ -30,6 +30,9 @@ def process_update(request, conn=None, **kwargs):
     items = json.loads(request.POST.get("change"))
     itemType = request.POST.get("itemType").capitalize()
 
+    if itemType == "Run":
+        itemType = "PlateAcquisition"
+
     additions = []
     removals = []
 
@@ -117,6 +120,9 @@ def get_items(request, conn=None, **kwargs):
         return HttpResponseNotAllowed("Methods allowed: POST")
 
     itemType = request.POST.get("itemType", "image").capitalize()
+    if itemType == "Run":
+        # PlateAcquisition is displayed as 'Run' in the UI
+        itemType = "PlateAcquisition"
 
     try:
         item_ids = json.loads(request.POST.get("ids") or b"[]")
