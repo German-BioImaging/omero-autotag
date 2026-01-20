@@ -57,7 +57,7 @@ export default class AutoTagToolbar extends React.Component {
             variant="dark"
             offset={5}
             className={'autotag_toolbar_tooltip'} >
-          The object type currently being tagged. Selecting a Project will tag Datasets, selecting a Dataset or an Image will tag Images.
+          The object type currently being tagged.
         </ReactTooltip>
 
         {
