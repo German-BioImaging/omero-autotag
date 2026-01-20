@@ -45,45 +45,54 @@ export default class AutoTagToolbar extends React.Component {
         className={'toolbar'}
       >
         <span
-          data-tip
-          data-for={'tooltip-toolbar-show-all'}
+          data-tooltip-id={'tooltip-toolbar-obj-type'}
           style={{float: 'left', marginLeft: '10px', fontSize: '12px', fontWeight: 'bold', lineHeight: '29px'}}
         >
           Tagging {this.props.itemType}s
         </span>
 
-        {
-          this.props.showUnmapped &&
-          <span
-            data-tooltip-id={'tooltip-toolbar-slider'}
-            style={{
-              float: 'left',
-              marginLeft: '20px',
-              fontSize: '12px',
-              fontWeight: 'bold',
-              lineHeight: '29px'
-            }}
-          >Rarity Threshold&nbsp;&nbsp;{this.props.requiredTokenCardinality}</span>
-        }
-        {
-          this.props.showUnmapped &&
-          <input className='slider'
-                 type='range'
-                 onChange={this.handleChangeRequiredTokenCardinality}
-                 value={this.props.requiredTokenCardinality}
-                 min={1}
-                 max={this.props.maxTokenCardinality}
-                 style={{
-                   float: 'left',
-                   marginLeft: '10px',
-                   lineHeight: '29px',
-                   paddingTop: '5px'
-                 }} />
-        }
-
-        <ReactTooltip id={'tooltip-toolbar-slider'} place="bottom" variant="dark">
-          Hide columns if token is found on fewer than this number of items.
+        <ReactTooltip
+            id={'tooltip-toolbar-obj-type'}
+            place="bottom"
+            variant="dark"
+            offset={5}
+            className={'autotag_toolbar_tooltip'} >
+          The object type currently being tagged.
         </ReactTooltip>
+
+        {
+          this.props.showUnmapped &&
+          <div style={{display: 'flex', alignItems: 'center', float: 'left', marginLeft: '20px', marginRight: '20px', lineHeight: '29px'}}>
+            <span
+              data-tooltip-id={'tooltip-toolbar-slider'}
+              style={{
+                fontSize: '12px',
+                fontWeight: 'bold',
+                marginRight: '10px'
+              }}
+            >Rarity Threshold&nbsp;&nbsp;{this.props.requiredTokenCardinality}</span>
+            <input className='slider'
+                   type='range'
+                   onChange={this.handleChangeRequiredTokenCardinality}
+                   value={this.props.requiredTokenCardinality}
+                   min={1}
+                   max={this.props.maxTokenCardinality}
+                   style={{
+                     cursor: 'pointer'
+                   }} />
+            {
+              this.props.showUnmapped &&
+              <ReactTooltip
+                  id={'tooltip-toolbar-slider'}
+                  place="bottom"
+                  variant="dark"
+                  offset={-4}
+                  className={'autotag_toolbar_tooltip'} >
+                Hide columns if token is found on fewer than this number of items.
+              </ReactTooltip>
+            }
+          </div>
+        }
 
         <span
           data-tooltip-id={'tooltip-toolbar-split-chars'}
@@ -92,7 +101,12 @@ export default class AutoTagToolbar extends React.Component {
           Split on&nbsp;
         </span>
 
-        <ReactTooltip id={'tooltip-toolbar-split-chars'} place="bottom" variant="dark">
+        <ReactTooltip
+            id={'tooltip-toolbar-split-chars'}
+            place="bottom"
+            variant="dark"
+            offset={5}
+            className={'autotag_toolbar_tooltip'} >
           Characters used to split the path and names to find relevant tags.
         </ReactTooltip>
 
@@ -106,12 +120,17 @@ export default class AutoTagToolbar extends React.Component {
 
         <span
           data-tooltip-id={'tooltip-toolbar-show-all'}
-          style={{fontSize: '12px', fontWeight: 'bold', lineHeight: '29px'}}
+          style={{fontSize: '12px', fontWeight: 'bold', lineHeight: '29px', marginRight: '5px'}}
         >
           Show All Potential Tags
         </span>
 
-        <ReactTooltip id={'tooltip-toolbar-show-all'} place="bottom" variant="dark">
+        <ReactTooltip
+            id={'tooltip-toolbar-show-all'}
+            place="bottom"
+            variant="dark"
+            offset={5}
+            className={'autotag_toolbar_tooltip'} >
           Show all the tokens found in the filenames that do not match an existing tag
         </ReactTooltip>
 
@@ -119,7 +138,9 @@ export default class AutoTagToolbar extends React.Component {
                checked={this.props.showUnmapped}
                onChange={this.toggleUnmapped}
                style={{
-                marginRight: '20px'
+                verticalAlign: 'middle',
+                marginRight: '20px',
+                cursor: 'pointer'
               }} />
 
         <input type="submit"

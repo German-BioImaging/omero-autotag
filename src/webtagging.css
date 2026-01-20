@@ -1,15 +1,16 @@
 
 /* Correct some aggressive CSS rules from dusty.css */
-.Select-arrow-zone {
-    display:table-cell !important;
+#auto_tag_panel .react-select__dropdown-indicator {
+  display: table-cell !important;
 }
 
-.Select-clear-zone {
-    display:table-cell !important;
+#auto_tag_panel .react-select__clear-indicator {
+  display: table-cell !important;
 }
 
-.Select-placeholder, .Select-option {
-    font-size:14px;
+#auto_tag_panel .react-select__placeholder,
+#auto_tag_panel .react-select__option {
+  font-size: 14px;
 }
 
 #auto_tag_panel .toolbar {
@@ -73,6 +74,8 @@
 
 #auto_tag_panel .token {
     text-align:center;
+    display: inline-flex;
+    align-items: center;
 }
 
 #auto_tag_panel .tag {
@@ -287,93 +290,128 @@
   }
 }
 
-#auto_tag_panel .Select-placeholder,
-#auto_tag_panel .Select-value {
-  padding-left: 7px;
+#auto_tag_panel .react-select__placeholder,
+#auto_tag_panel .react-select__single-value {
+  padding-left: 5px;
   padding-right: 5px;
   white-space: nowrap;
-  position:inherit;
+  position: inherit;
   display: table-cell;
 }
 
-#auto_tag_panel .Select-control {
-    line-height:inherit;
-    height: auto;
-    border: 1px solid transparent;
+#auto_tag_panel .react-select__control {
+  line-height: inherit;
+  height: auto;
+  border: 1px solid transparent;
+  background: none transparent;
 }
 
-#auto_tag_panel .Select-placeholder,
-#auto_tag_panel .Select-value,
-#auto_tag_panel .Select-clear-zone,
-#auto_tag_panel .Select-arrow-zone {
+#auto_tag_panel .react-select__placeholder,
+#auto_tag_panel .react-select__single-value,
+#auto_tag_panel .react-select__clear-indicator,
+#auto_tag_panel .react-select__dropdown-indicator {
   line-height: inherit;
   height: auto;
   cursor: pointer;
 }
 
-#auto_tag_panel .Select-value-label {
-    text-shadow: 0 1px 0 rgba(255,255,255,.8);
-    color:hsl(205,30%,35%);
+#auto_tag_panel .react-select__single-value {
+  text-shadow: 0 1px 0 rgba(255,255,255,.8);
+  color: hsl(205,30%,35%);
 }
 
-#auto_tag_panel .Select-input {
-    line-height: inherit;
-    height: auto;
-    padding-left: 0;
-    padding-right: 0;
+#auto_tag_panel .react-select__input-container {
+  line-height: inherit;
+  height: auto;
+  padding-left: 0;
+  padding-right: 0;
 }
 
-#auto_tag_panel .Select-clear-zone,
-#auto_tag_panel .Select-arrow-zone {
-    padding: 0px 2px 0px 2px;
+#auto_tag_panel .react-select__clear-indicator,
+#auto_tag_panel .react-select__dropdown-indicator {
+  padding: 0px 2px;
 }
 
-#auto_tag_panel .Select-arrow-zone {
-    padding-top: 2px;
-    padding-right: 7px;
+#auto_tag_panel .react-select__dropdown-indicator {
+  padding-top: 2px;
+  padding-right: 7px;
 }
 
-#auto_tag_panel .Select-clear-zone{
-    font-weight: bold;
-    padding-bottom: 2px;
-    padding-right: 4px;
+#auto_tag_panel .react-select__clear-indicator {
+  font-weight: bold;
+  padding-bottom: 2px;
+  padding-right: 4px;
+  font-size: 10px;
+  color: black;
 }
 
-#auto_tag_panel .Select-control {
-  background: none transparent;
+#auto_tag_panel .react-select__placeholder {
+  font-size: inherit;
+  color: inherit;
 }
 
-#auto_tag_panel .Select-placeholder {
-    font-size: inherit;
-    color: inherit;
+#auto_tag_panel .react-select__menu {
+  width: auto;
+  margin-top: 2px;
 }
 
-#auto_tag_panel .Select-clear {
-    font-size: 10px;
-    color: black;
+#auto_tag_panel .react-select__option {
+  width: auto;
+  font-size: 11px;
+  padding-top: 3px;
+  padding-bottom: 3px;
 }
 
-#auto_tag_panel .Select-menu-outer {
-    width: auto;
-    margin-top: 2px;
+#auto_tag_panel .react-select__control {
+  display: inline !important;
+  white-space: nowrap !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
-#auto_tag_panel .Select-option {
-    width: auto;
-    font-size: 11px;
-    padding-top: 3px;
-    padding-bottom: 3px;
+#auto_tag_panel .react-select__control:focus,
+#auto_tag_panel .react-select__control:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+#auto_tag_panel .react-select__value-container {
+  display: table-row !important;
+  padding-right: 0px;
+  padding-left: 2px;
+}
+
+#auto_tag_panel .react-select__single-value,
+#auto_tag_panel .react-select__clear-indicator,
+#auto_tag_panel .react-select__dropdown-indicator,
+#auto_tag_panel .react-select__indicators {
+  display: inline-flex !important;
+  vertical-align: middle;
+  white-space: nowrap;
+  padding-right: 0px;
+  padding-bottom: 0px;
+}
+
+#auto_tag_panel .react-select__clear-indicator,
+#auto_tag_panel .react-select__dropdown-indicator,
+#auto_tag_panel .react-select__indicators {
+  padding-left: 0px;
+}
+
+#auto_tag_panel .react-select__dropdown-indicator svg {
+  width: 10px;
+  height: 10px;
+  color: hsl(205, 30%, 35%);
+  fill: currentColor;
+}
+
+#auto_tag_panel .react-select__clear-indicator svg {
+  width: 10px;
+  height: 10px;
 }
 
 #auto_tag_panel .tag_button {
-	display:inline-flex;
-	align-items:center;
-	justify-content:center;
-	vertical-align:middle;
-	padding-left: 7px;
-  padding-right: 5px;
-  padding-top: 1px;
-  padding-bottom: 1px;
+  display:inline-block;
     -webkit-border-radius: 30px;
 	-moz-border-radius: 30px;
 	border-radius: 30px;
@@ -407,7 +445,7 @@
 	background:linear-gradient(to top, hsl(205,65%,80%) 0%,hsl(205,70%,75%) 100%); /* W3C */
 
 	text-decoration:none;
-	text-shadow: 0 1px 0 rgba(255,255,255,.4);
+	/*text-shadow: 0 1px 0 rgba(255,255,255,.4);*/
 	color:hsl(205,30%,30%);
 }
 
@@ -474,9 +512,16 @@
 
 #auto_tag_panel .autotag_tooltip {
     text-align: left;
-    font-size: 11px;
+    font-size: 12px;
     padding-top: 8px;
     padding-bottom: 8px;
     padding-left: 6px;
     padding-right: 30px;
+    z-index: 1000;
+}
+
+#auto_tag_panel .autotag_toolbar_tooltip {
+    font-size: 13px;
+    z-index: 1000;
+    line-height: 1;
 }
