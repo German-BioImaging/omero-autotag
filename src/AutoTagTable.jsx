@@ -86,6 +86,8 @@ export default class AutoTagForm extends React.Component {
                          showUnmapped={this.props.showUnmapped} />
     );
 
+    let hasFileset = [...this.props.items].some(item => item.clientPath !== "");
+
     return (
       <div style={{position:'absolute',
                    bottom:'25px',
@@ -102,7 +104,7 @@ export default class AutoTagForm extends React.Component {
                               selectMapping={this.props.selectMapping}
                               newMapping={this.props.newMapping}
                               items={this.props.items}
-                              itemType={this.props.itemType}
+                              hasFileset={hasFileset}
                               handleCheckedChangeAll={this.props.handleCheckedChangeAll}
                               showUnmapped={this.props.showUnmapped}
                               sortColumn={this.state.sortColumn}

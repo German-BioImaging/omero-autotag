@@ -45,7 +45,7 @@ export default class AutoTagHeaderRow extends React.Component {
           {cellNodesTag}
           <th style={{ cursor: 'pointer', userSelect: 'none' }}
               onClick={() => this.props.onSort('name')}>
-            {this.props.itemType==="image"?<div><span>Original Import Path</span><br/><span>Item Name</span></div>:"Item Name"}
+            {this.props.hasFileset?<div><span>Original Import Path</span><br/><span>Item Name</span></div>:"Item Name"}
             {sortArrow}
           </th>
         </tr>

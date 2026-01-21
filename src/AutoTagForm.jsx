@@ -790,7 +790,6 @@ export default class AutoTagForm extends React.Component {
 
         <AutoTagTable tokenMap={this.filteredTokenMap()}
                       items={this.state.items}
-                      itemType={this.state.selectedItemType}
                       unmappedTags={this.state.unmappedTags}
                       showUnmapped={this.state.showUnmapped}
                       requiredTokenCardinality={this.state.requiredTokenCardinality}

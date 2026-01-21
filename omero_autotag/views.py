@@ -182,9 +182,10 @@ def get_items(request, conn=None, **kwargs):
                 image.fileset.id AS filesetId,
                 filesetentry.clientPath AS clientPath)
             FROM Image image
-            JOIN image.fileset fileset
-            JOIN fileset.usedFiles filesetentry
-            WHERE index(filesetentry) = 0
+            LEFT OUTER JOIN image.fileset fileset
+            LEFT OUTER JOIN fileset.usedFiles filesetentry
+            WHERE (index(filesetentry) = 0
+                OR index(filesetentry) is null)
             AND image.id IN (:oids)
             """
     else:
@@ -206,7 +207,9 @@ def get_items(request, conn=None, **kwargs):
             e["ownerId"], conn)
         del e[f"{itemType.lower()}_details_permissions"]
         e["tags"] = tags_on_items.get(e["id"]) or []
-        if itemType != "Image":
+        if itemType != "Image" or e["filesetId"] is None:
+            # Ensure filesetId and clientPath are always present for
+            # consistency, including images without filesets
             e["filesetId"] = "-1"
             e["clientPath"] = ""
         result_items.append(e)
