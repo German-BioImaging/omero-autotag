@@ -27,7 +27,9 @@ export default class AutoTagForm extends React.Component {
       requiredTokenCardinality: 2,
       maxTokenCardinality: 2,
       separators: " _./\\[]",
-      tagValuesMap: new Map()
+      tagValuesMap: new Map(),
+      selectedItemType: null,  // The currently selected item type from dropdown
+      availableTypes: [],      // Available item types for this selection
     }
 
     // Abort capable AJAX variables
@@ -44,6 +46,7 @@ export default class AutoTagForm extends React.Component {
     this.toggleUnmapped = this.toggleUnmapped.bind(this);
     this.handleChangeRequiredTokenCardinality = this.handleChangeRequiredTokenCardinality.bind(this);
     this.handleChangeSeparator = this.handleChangeSeparator.bind(this);
+    this.handleChangeItemType = this.handleChangeItemType.bind(this);
 
   }
 
@@ -57,6 +60,51 @@ export default class AutoTagForm extends React.Component {
       requiredTokenCardinality: 2,
       maxTokenCardinality: 2,
     });
+  }
+
+  handleChangeItemType(e) {
+    const selectedType = e.target.value;
+    this.setState({ selectedItemType: selectedType }, () => {
+      this.loadItemsForSelectedType();
+    });
+  }
+
+  getItemIdsForType(itemType) {
+    // Determine which items to load based on the selected type
+    const childrenObjects = this.props.childrenObjects || [];
+    const selectedObjects = this.props.selectedObjects || [];
+
+    itemType = itemType.toLowerCase();
+
+    // PlateAcquisition is displayed as 'Run' in the UI
+    if (itemType === 'run') {
+      itemType = 'acquisition';
+    }
+
+    if ($.inArray(itemType, ["image", "dataset", "project", "screen", "plate", 'acquisition']) > -1) {
+      const itemIds = [];
+      childrenObjects.forEach(obj => {
+        if (obj.type === itemType) {
+          itemIds.push(obj.id);
+        }
+      });
+      selectedObjects.forEach(obj => {
+        if (obj.type === itemType) {
+          itemIds.push(obj.id);
+        }
+      });
+
+      return itemIds;
+    }
+    return [];
+  }
+
+  loadItemsForSelectedType() {
+    const itemType = this.state.selectedItemType;
+    if (!itemType) return;
+
+    const itemIds = this.getItemIdsForType(itemType);
+    this.loadFromServer(itemIds, itemType);
   }
 
   tokenValueCheck (tokenValue) {
@@ -318,26 +366,31 @@ export default class AutoTagForm extends React.Component {
   }
 
   componentDidMount() {
-    this.loadFromServer(this.props.itemIds, this.props.itemType);
+    // Initialize with the default item type
+    this.setState({
+      availableTypes: this.props.availableTypes || [],
+      selectedItemType: this.props.defaultType || (this.props.availableTypes && this.props.availableTypes[0])
+    }, () => {
+      // Load data after state is set
+      this.loadItemsForSelectedType();
+    });
   }
 
   componentWillReceiveProps(nextProps) {
 
-    // If the sizes are not the same we should definitely reload
-    // If the itemType has changed, reload regardless of itemIds
-    if (nextProps.itemIds.size !== this.props.itemIds.size || nextProps.itemType !== this.props.itemType) {
-      this.loadFromServer(nextProps.itemIds, nextProps.itemType);
-      // Bail out as a reload was required and done
-      return;
-    }
-
-    // If the sets are the same size, then compare the values.
+    // If the available types or default type have changed, update state
     if (
-      difference(new Set(nextProps.itemIds), new Set(this.props.itemIds)).size > 0 ||
-      difference(new Set(this.props.itemIds), new Set(nextProps.itemIds)).size > 0
+      nextProps.availableTypes !== this.props.availableTypes ||
+      nextProps.defaultType !== this.props.defaultType ||
+      nextProps.selectedObjects !== this.props.selectedObjects ||
+      nextProps.childrenObjects !== this.props.childrenObjects
     ) {
-      this.loadFromServer(nextProps.itemIds, nextProps.itemType);
-      // Bail out as a reload was required and done
+      this.setState({
+        availableTypes: nextProps.availableTypes || [],
+        selectedItemType: nextProps.defaultType || (nextProps.availableTypes && nextProps.availableTypes[0])
+      }, () => {
+        this.loadItemsForSelectedType();
+      });
       return;
     }
 
@@ -445,7 +498,7 @@ export default class AutoTagForm extends React.Component {
       type: "POST",
       data: {
         change: JSON.stringify(changes),
-        itemType: this.props.itemType
+        itemType: this.state.selectedItemType
       },
       success: function(data) {
         // No action required
@@ -658,7 +711,7 @@ export default class AutoTagForm extends React.Component {
   }
 
   refreshForm() {
-    this.loadFromServer(this.props.itemIds, this.props.itemType);
+    this.loadItemsForSelectedType();
   }
 
   toggleUnmapped() {
@@ -729,12 +782,14 @@ export default class AutoTagForm extends React.Component {
                         refreshForm={this.refreshForm}
                         separators={this.state.separators}
                         handleChangeSeparator={this.handleChangeSeparator}
-                        itemType={this.props.itemType}
+                        itemType={this.state.selectedItemType}
+                        availableTypes={this.state.availableTypes}
+                        selectedItemType={this.state.selectedItemType}
+                        handleChangeItemType={this.handleChangeItemType}
         />
 
         <AutoTagTable tokenMap={this.filteredTokenMap()}
                       items={this.state.items}
-                      itemType={this.props.itemType}
                       unmappedTags={this.state.unmappedTags}
                       showUnmapped={this.state.showUnmapped}
                       requiredTokenCardinality={this.state.requiredTokenCardinality}
@@ -742,7 +797,6 @@ export default class AutoTagForm extends React.Component {
                       selectMapping={this.selectMapping}
                       newMapping={this.newMapping}
                       handleCheckedChangeAll={this.handleCheckedChangeAll}
-
         />
       </form>
     );

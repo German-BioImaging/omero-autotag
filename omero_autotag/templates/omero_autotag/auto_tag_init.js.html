@@ -1,5 +1,5 @@
 <!-- Update version below to match package.json version for cache busting -->
-<script src="{% static "omero_autotag/js/bundle.min.js" %}?v=4.2.3"></script>
+<script src="{% static "omero_autotag/js/bundle.min.js" %}?v=4.3.0"></script>
 
 <script>
 
@@ -9,19 +9,75 @@ $(function() {
   var urlUpdate="{% url 'autotag_process_update' %}";
   var urlCreateTag="{% url 'autotag_create_tag' %}";
 
-  var reactRender = function(datatree, itemType, selectedNode) {
-    var itemIds = [];
-    $.each(selectedNode.children, function(index, child) {
-      if (selectedNode.type === "tag") {
-        var childNode = datatree.get_node(child);
-        if (childNode.type !== "image") {
-          // Skip non-image children of a tag
+  var reactRender = function(datatree, selectedNodes) {
+    // Collect selected objects with their IDs
+    var selectedObjects = [];
+    var nodes = Array.isArray(selectedNodes) ? selectedNodes : [selectedNodes];
+
+    nodes.forEach(function(node) {
+      selectedObjects.push({
+        id: node.data.obj.id,
+        type: node.type,
+        name: node.text
+      });
+    });
+
+    // Collect children objects
+    var childrenObjects = [];
+    var processedIds = new Set();
+
+    nodes.forEach(function(selectedNode) {
+      selectedNode.children.forEach(function(childId) {
+        var childNode = datatree.get_node(childId);
+
+        // Skip non-supported children of a tag
+        if (selectedNode.type === "tag" && ($.inArray(childNode.type, ["image", "dataset", "project", "screen", "plate", 'acquisition']) < 0)) {
           return;
         }
-      }
-      itemIds.push(datatree.get_node(child).data.obj.id);
+
+        // Avoid duplicates based on id and type combination
+        var uniqueKey = childNode.data.obj.id + '-' + childNode.type;
+        if (!processedIds.has(uniqueKey)) {
+          childrenObjects.push({
+            id: childNode.data.obj.id,
+            type: childNode.type,
+            name: childNode.text
+          });
+          processedIds.add(uniqueKey);
+        }
+      });
     });
-    autotagform.default(itemIds, itemType, url, urlUpdate, urlCreateTag); // calls autotagform in Main.jsx
+
+    var availableTypes = ['Screen', 'Plate', 'Acquisition', 'Project', 'Dataset', 'Image'];
+    // Filter availableTypes to only include types that exist in childrenObjects or selectedObjects
+    var objectTypes = new Set([selectedObjects[0].type]);
+    childrenObjects.forEach(function(obj) { objectTypes.add(obj.type); });
+
+    availableTypes = availableTypes.filter(function(type) {
+      return objectTypes.has(type.toLowerCase());
+    });
+
+    const index = availableTypes.indexOf('Acquisition');
+    if (index !== -1) {
+      availableTypes[index] = 'Run';
+    }  // Rename 'Acquisition' to 'Run' for display
+
+    if (availableTypes.length === 0) {
+      return;
+    }
+    // Last type as default, prioritizing Image > Dataset > Project
+    defaultType = availableTypes[availableTypes.length - 1]
+
+    // Call the autotagform with structured data
+    autotagform.default(
+      selectedObjects,
+      childrenObjects,
+      availableTypes,
+      defaultType,
+      url,
+      urlUpdate,
+      urlCreateTag
+    );
   };
 
   $("#auto_tag_panel").omeroweb_center_plugin({
@@ -33,50 +89,57 @@ $(function() {
       var datatree = $.jstree.reference('#dataTree');
       if (!datatree) return;
 
-      // We use the tree to access selected items, since we can traverse
-      // to check parents etc...
-      // Note: We do not use the parameters selected, dtype or oid as
-      // it is easier to use the tree directly as these do not refer to
-      // a jstree node
+      // Get all selected items from the tree
       var tree_selected = datatree.get_selected(true);
 
-      if (tree_selected === undefined) {
+      if (tree_selected === undefined || tree_selected.length === 0) {
         return;
       }
 
-      // TODO Handle multi-selection
-      var selected = tree_selected[0];
-
-      // If the selected item is an image, return that image and its siblings
-      if (selected.type === 'image') {
-        // Set selected to be the parent so that lastSelected can be compared
-        // to the container
-        selected = datatree.get_node(datatree.get_parent(selected));
-        reactRender(datatree, "image", selected);
-      }
-
-      // If the selected item is a Dataset, tag or orphaned return its children
-      else if (selected.type === 'dataset' || selected.type === 'orphaned' || selected.type === 'tag'){
-        // Make sure that the dataset is loaded
-        if (!datatree.is_loaded(selected)) {
-          datatree.load_node(selected, function(node, status){
-            reactRender(datatree, "image", datatree.get_node(node));
-          });
-        } else {
-          reactRender(datatree, "image", datatree.get_node(selected));
+      // Ensure all selected nodes are loaded
+      var nodesToLoad = [];
+      tree_selected.forEach(function(node) {
+        if (!datatree.is_loaded(node)) {
+          nodesToLoad.push(node);
         }
-      } else if (selected.type === 'project') {
-        // For a project, load the datasets underneath it
-        if (!datatree.is_loaded(selected)) {
-          datatree.load_node(selected, function(node, status){
-            reactRender(datatree, "dataset", datatree.get_node(node));
+      });
+
+      if (nodesToLoad.length === 0) {
+        // All nodes already loaded
+        reactRender(datatree, tree_selected);
+      } else {
+        // Load all unloaded nodes, then render
+        var loadedCount = 0;
+        var totalToLoad = nodesToLoad.length;
+
+        var checkAllLoaded = function() {
+          if (loadedCount === totalToLoad) {
+            reactRender(datatree, tree_selected);
+          }
+        };
+
+        nodesToLoad.forEach(function(node) {
+          datatree.load_node(node, function(loadedNode, status) {
+            loadedCount++;
+            checkAllLoaded();
           });
-        } else {
-          reactRender(datatree, "dataset", datatree.get_node(selected));
-        }
+        });
       }
     },
-    supported_obj_types: ['dataset', 'image', 'orphaned', 'tag', 'project'],
+
+    plugin_enabled: function(selected){
+      // Required for multi-selection support
+      // supported_obj_types only works for single selection
+      if (selected.length == 0) {
+        return false;
+      }
+      var dtype = selected[0]['id'].split('-')[0];
+      if (selected.length > 0) {
+          return ($.inArray(dtype, ["image", "dataset", "project", "screen", "plate", "acquisition", "tag", "orphaned", "experimenter"]) > -1);
+      } else {
+          return false;
+      }
+    }
   });
 });
 

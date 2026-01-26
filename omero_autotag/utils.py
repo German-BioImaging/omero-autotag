@@ -14,6 +14,13 @@ def create_tag_annotations_links(conn, itemType, additions=[], removals=[]):
     model_d = {
         "Image": (omero.model.ImageI, omero.model.ImageAnnotationLinkI),
         "Dataset": (omero.model.DatasetI, omero.model.DatasetAnnotationLinkI),
+        "Project": (omero.model.ProjectI, omero.model.ProjectAnnotationLinkI),
+        "Plate": (omero.model.PlateI, omero.model.PlateAnnotationLinkI),
+        "Screen": (omero.model.ScreenI, omero.model.ScreenAnnotationLinkI),
+        "PlateAcquisition": (
+            omero.model.PlateAcquisitionI,
+            omero.model.PlateAcquisitionAnnotationLinkI
+        ),
     }
 
     new_links = []

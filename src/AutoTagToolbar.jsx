@@ -48,7 +48,27 @@ export default class AutoTagToolbar extends React.Component {
           data-tooltip-id={'tooltip-toolbar-obj-type'}
           style={{float: 'left', marginLeft: '10px', fontSize: '12px', fontWeight: 'bold', lineHeight: '29px'}}
         >
-          Tagging {this.props.itemType}s
+          {this.props.availableTypes && this.props.availableTypes.length > 1 ? (
+            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+              <label htmlFor="itemTypeSelect" style={{margin: '0'}}>
+                Tagging
+              </label>
+              <select
+                id="itemTypeSelect"
+                value={this.props.selectedItemType || ''}
+                onChange={this.props.handleChangeItemType}
+                style={{padding: '4px', fontSize: '12px', cursor: 'pointer'}}
+              >
+                {this.props.availableTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            `Tagging ${this.props.itemType}s`
+          )}
         </span>
 
         <ReactTooltip
@@ -57,7 +77,10 @@ export default class AutoTagToolbar extends React.Component {
             variant="dark"
             offset={5}
             className={'autotag_toolbar_tooltip'} >
-          The object type currently being tagged.
+          {this.props.availableTypes && this.props.availableTypes.length > 1
+            ? 'Select which object type to tag.'
+            : 'The object type currently being tagged.'
+          }
         </ReactTooltip>
 
         {
