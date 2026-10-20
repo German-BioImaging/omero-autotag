@@ -34,7 +34,7 @@ export default class AutoTagHeaderRowTagCell extends React.Component {
 
     return (
       <th>
-        <div className={'token'}>test
+        <div className={'token'}>
           <input type="checkbox"
                  checked={this.isChecked()}
                  onChange={this.handleCheckedChangeAll} />
