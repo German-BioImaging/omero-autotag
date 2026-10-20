@@ -148,7 +148,7 @@ def get_items(request, conn=None, **kwargs):
         if len(next_tags) < settings.PAGE:
             break
         page += 1
-
+    tags.sort(key=lambda x: x["value"].lower())
     # Details about the items specified
     params = omero.sys.ParametersI()
     service_opts = deepcopy(conn.SERVICE_OPTS)
