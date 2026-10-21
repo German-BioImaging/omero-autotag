@@ -112,7 +112,7 @@ export default class AutoTagForm extends React.Component {
     return tokenValue.length > 0
   }
 
-  addOrUpdateToken(tagValuesMap, tokenMap, value) {
+  addOrUpdateToken(tagValuesMap, tokenMap, value, position) {
 
     let token;
 
@@ -122,10 +122,14 @@ export default class AutoTagForm extends React.Component {
     if (tokenMap.has(value)) {
       token = tokenMap.get(value);
       token.increment();
+      // Token with negative positon are from the file path
+      // Tokens from image name are positive
+      // Priority to image name token
+      token.position = position < 0 ? Math.max(token.position, position) : Math.min(token.position, position);
 
     // Otherwise, create the entry and do any token -> tag matching
     } else {
-      token = new Token(value);
+      token = new Token(value, position);
       tokenMap.set(value, token);
 
       // When a token is first added, attempt to match it to tags
@@ -154,16 +158,22 @@ export default class AutoTagForm extends React.Component {
     const regexPattern = RegExp(`[${escapedString}]+`);
 
 
-    const allTokens = new Set();
-    // Split and add tokens from item.clientPath (for images)
-    item.clientPath.split(regexPattern).forEach(value => allTokens.add(value));
+    // Map each unique token to its earliest position within the path/name
+    const allTokens = new Map();
+    const addTokens = (str, isClientPath) => str.split(regexPattern).forEach((value, i) => {
+      if (!allTokens.has(value) || (!isClientPath && i < allTokens.get(value))) {
+        allTokens.set(value, isClientPath ? -99999 + i : i);
+      }
+    });
     // Split and add tokens from item.name
-    item.name.split(regexPattern).forEach(value => allTokens.add(value));
+    addTokens(item.name, false);
+    // Split and add tokens from item.clientPath (for images)
+    addTokens(item.clientPath, true);
 
     // Process each unique token
     let itemTokens = new Set();
-    allTokens.forEach(value =>
-      itemTokens.add(this.addOrUpdateToken(tagValuesMap, tokenMap, value))
+    allTokens.forEach((position, value) =>
+      itemTokens.add(this.addOrUpdateToken(tagValuesMap, tokenMap, value, position))
     );
 
     // Return the set of tokens that are present on this item
@@ -362,7 +372,13 @@ export default class AutoTagForm extends React.Component {
       item.checkedTags = intersection(item.tags, unmappedTags);
 
     });
-    return [items, tokenMap, unmappedTags];
+    // Order tokens by position in the name, then alphabetically
+    const sortedTokenMap = new Map([...tokenMap].sort(
+      (a, b) =>  // First per position, then if it's not -1 (aka filename) sort alphabetically
+        a[1].position - b[1].position || a[0].localeCompare(b[0])
+    ));
+    unmappedTags = new Set([...unmappedTags].sort((a, b) => a.value.localeCompare(b.value)));
+    return [items, sortedTokenMap, unmappedTags];
   }
 
   componentDidMount() {

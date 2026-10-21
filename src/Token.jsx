@@ -1,6 +1,7 @@
 class Token {
-  constructor(value) {
+  constructor(value, position = 0) {
     this.value = value;
+    this.position = position;
     this.count = 1;
     this.possible = new Set();
     this.activeTag = null;
