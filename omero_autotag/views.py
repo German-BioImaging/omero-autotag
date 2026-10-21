@@ -144,7 +144,8 @@ def get_items(request, conn=None, **kwargs):
     page = 1
     while True:
         next_tags = tree.marshal_tags(conn, group_id=group_id, page=page)
-        tags.extend(filter(lambda x: not x["set"], next_tags))  # Tagsets are not relevant to this view
+        # Tagsets are not relevant to this view
+        tags.extend(filter(lambda x: not x["set"], next_tags))
         if len(next_tags) < settings.PAGE:
             break
         page += 1
