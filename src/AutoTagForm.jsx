@@ -122,8 +122,10 @@ export default class AutoTagForm extends React.Component {
     if (tokenMap.has(value)) {
       token = tokenMap.get(value);
       token.increment();
-      // Do not update a token position if the new position is -1 (from the file path)
-      token.position = position == -1 ? token.position : Math.min(token.position, position);
+      // Token with negative positon are from the file path
+      // Tokens from image name are positive
+      // Priority to image name token
+      token.position = position < 0 ? Math.max(token.position, position) : Math.min(token.position, position);
 
     // Otherwise, create the entry and do any token -> tag matching
     } else {
@@ -158,9 +160,9 @@ export default class AutoTagForm extends React.Component {
 
     // Map each unique token to its earliest position within the path/name
     const allTokens = new Map();
-    const addTokens = (str, isFixed) => str.split(regexPattern).forEach((value, i) => {
-      if (!allTokens.has(value) || (!isFixed && i < allTokens.get(value))) {
-        allTokens.set(value, isFixed ? -1 : i);
+    const addTokens = (str, isClientPath) => str.split(regexPattern).forEach((value, i) => {
+      if (!allTokens.has(value) || (!isClientPath && i < allTokens.get(value))) {
+        allTokens.set(value, isClientPath ? -99999 + i : i);
       }
     });
     // Split and add tokens from item.name
@@ -373,9 +375,6 @@ export default class AutoTagForm extends React.Component {
     // Order tokens by position in the name, then alphabetically
     const sortedTokenMap = new Map([...tokenMap].sort(
       (a, b) =>  // First per position, then if it's not -1 (aka filename) sort alphabetically
-        a[1].position === -1 && b[1].position === -1 ? 0 :
-        a[1].position === -1 ? -1 :
-        b[1].position === -1 ? 1 :
         a[1].position - b[1].position || a[0].localeCompare(b[0])
     ));
     unmappedTags = new Set([...unmappedTags].sort((a, b) => a.value.localeCompare(b.value)));

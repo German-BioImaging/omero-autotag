@@ -88,10 +88,10 @@ export default class AutoTagHeaderRowTokenCell extends React.Component {
     return (
       <th className={this.props.groupStart ? 'token_group_start' : ''}>
         <div className={'token_position'}
-             title={token.position === -1
+             title={token.position < 0
                ? 'This token comes from the file import path'
                : 'Token position in the name'}>
-          #{token.position + 1}
+          #{token.position < 0 ? 0 : token.position + 1}
         </div>
         <div className={'token'}>{token.value}<br/>
           <input type="checkbox"
