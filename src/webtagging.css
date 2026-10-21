@@ -78,6 +78,22 @@
     align-items: center;
 }
 
+#auto_tag_panel .token_position {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #666;
+    background: #eef2f7;
+    border-radius: 8px;
+    padding: 0 6px;
+    margin-bottom: 2px;
+    display: inline-block;
+}
+
+#auto_tag_panel th.token_group_start,
+#auto_tag_panel td.token_group_start {
+    border-left: 3px solid #5b8bd0;
+}
+
 #auto_tag_panel .tag {
     white-space:nowrap;
 }
