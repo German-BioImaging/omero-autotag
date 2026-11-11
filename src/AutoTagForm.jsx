@@ -122,10 +122,16 @@ export default class AutoTagForm extends React.Component {
     if (tokenMap.has(value)) {
       token = tokenMap.get(value);
       token.increment();
+
       // Token with negative positon are from the file path
       // Tokens from image name are positive
-      // Priority to image name token
-      token.position = position < 0 ? Math.max(token.position, position) : Math.min(token.position, position);
+      if ((position >= 0 && token.position >= 0) || (position < 0 && token.position < 0)) {
+        // same sign, we take the smallest position
+        token.position = Math.min(token.position, position);
+      } else {
+        // different sign, priority to image name token (position becomes >= 0)
+        token.position = Math.max(token.position, position);
+      }
 
     // Otherwise, create the entry and do any token -> tag matching
     } else {
