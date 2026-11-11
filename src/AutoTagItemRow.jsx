@@ -17,6 +17,7 @@ export default class AutoTagItemRow extends React.Component {
     let unmappedTags = this.props.unmappedTags;
     let showUnmapped = this.props.showUnmapped;
 
+    let previousPosition = null;
     let cellNodesToken = [...tokenMap].map(kv => {
       let token = kv[1];
       let tag = token.activeTag;

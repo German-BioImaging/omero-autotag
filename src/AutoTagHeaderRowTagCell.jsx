@@ -27,14 +27,13 @@ export default class AutoTagHeaderRowTagCell extends React.Component {
   }
 
   render() {
-    let token = this.props.token;
     let tag = this.props.tag;
 
     let tooltipID = 'tooltip-tag-' + tag.id;
 
     return (
       <th>
-        <div className={'token'}>test
+        <div className={'token'}>
           <input type="checkbox"
                  checked={this.isChecked()}
                  onChange={this.handleCheckedChangeAll} />

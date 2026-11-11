@@ -85,9 +85,13 @@ export default class AutoTagHeaderRowTokenCell extends React.Component {
       tagClassName += " tag_button_inactive";
     }
 
+    let cellClassName = this.props.cellClassName;
+
     return (
-      <th>
-        <div className={'token'}>{token.value}<br/>
+      <th className={cellClassName}>
+        <div className={'token'}
+             title={token.position < 0 ? 'This token comes from the file import path': token.position >= 0 ? `Token position in the name: #${token.position + 1}` : undefined}>
+          {token.value}<br/>
           <input type="checkbox"
                  checked={this.isChecked()}
                  disabled={this.isDisabled()}
