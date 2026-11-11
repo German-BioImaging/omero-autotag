@@ -21,7 +21,6 @@ export default class AutoTagItemRowTokenCell extends React.Component {
       ) ||
       // The mapping of this column changed
       nextProps.tag !== this.props.tag ||
-      nextProps.groupStart !== this.props.groupStart ||
       // The item was updated AND this tag is now applied/unapplied
       // whereas before it was unapplied/applied
       (
@@ -62,10 +61,6 @@ export default class AutoTagItemRowTokenCell extends React.Component {
     let className = '';
     if (this.isTagged()) {
       className = 'success';
-    }
-
-    if (this.props.groupStart) {
-      className += ' token_group_start';
     }
 
     return (

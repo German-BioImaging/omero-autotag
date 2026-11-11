@@ -5,6 +5,7 @@ import AutoTagHeaderRowTagCell from './AutoTagHeaderRowTagCell';
 
 export default class AutoTagHeaderRow extends React.Component {
   render() {
+    let currentClass = "token_position_odd";
     let previousPosition = null;
     let cellNodesToken = [...this.props.tokenMap].map(kv => {
       let token = kv[1];
@@ -13,11 +14,13 @@ export default class AutoTagHeaderRow extends React.Component {
       // Hide the unmapped columns if set
       if (this.props.showUnmapped || token.possible.size > 0) {
         // The first visible column of each position group gets a separator
-        const groupStart = token.position !== previousPosition;
-        previousPosition = token.position + 1;
+        if (currentClass === null || token.position !== previousPosition && !(token.position < 0 && previousPosition < 0)) {
+          previousPosition = token.position;
+          currentClass = currentClass === "token_position_odd" ? "token_position_even" : "token_position_odd";
+        }
         return (
           <AutoTagHeaderRowTokenCell token={token}
-                                     groupStart={groupStart}
+                                     cellClassName={currentClass}
                                      tag={tag}
                                      tokenMap={this.props.tokenMap}
                                      selectMapping={this.props.selectMapping}

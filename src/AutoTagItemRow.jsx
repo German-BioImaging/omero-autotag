@@ -23,11 +23,8 @@ export default class AutoTagItemRow extends React.Component {
       let tag = token.activeTag;
 
       if (showUnmapped || token.possible.size > 0) {
-        const groupStart = token.position !== previousPosition;
-        previousPosition = token.position + 1;
         return (
           <AutoTagItemRowTokenCell key={token.value}
-                                    groupStart={groupStart}
                                     item={item}
                                     token={token}
                                     tag={tag}
