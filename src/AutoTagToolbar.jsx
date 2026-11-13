@@ -115,7 +115,7 @@ export default class AutoTagToolbar extends React.Component {
 
         {
           this.props.showUnmapped &&
-          <div style={{display: 'flex', alignItems: 'center', float: 'left', marginLeft: '20px', marginRight: '20px', lineHeight: '29px'}}>
+          <div style={{display: 'flex', alignItems: 'center', float: 'left', marginLeft: '15px', lineHeight: '29px'}}>
             <span
               data-tooltip-id={'tooltip-toolbar-slider'}
               style={{
@@ -147,36 +147,35 @@ export default class AutoTagToolbar extends React.Component {
           </div>
         }
 
-        <span
-          data-tooltip-id={'tooltip-toolbar-split-chars'}
-          style={{fontSize: '12px', fontWeight: 'bold', lineHeight: '29px'}}
-        >
-          Split on&nbsp;
-        </span>
+        <div style={{float: 'right', marginRight: '20px', lineHeight: '29px', paddingTop: '2px'}}>
 
-        <ReactTooltip
-            id={'tooltip-toolbar-split-chars'}
-            place="bottom"
-            variant="dark"
-            offset={5}
-            className={'autotag_toolbar_tooltip'} >
-          Characters used to split the path and names to find relevant tags.
-        </ReactTooltip>
+          <input type="submit"
+                id="applyButton"
+                value="Apply" />
 
-        <input type="text"
-               size="5"
-               onChange={this.handleChangeSeparator}
-               value={this.props.separators}
-               style={{
-                marginRight: '20px'
-              }} />
+          <input type="button"
+                onClick={this.refreshForm}
+                id="refreshForm"
+                value="Refresh" />
+        </div>
 
-        <span
-          data-tooltip-id={'tooltip-toolbar-show-all'}
-          style={{fontSize: '12px', fontWeight: 'bold', lineHeight: '29px', marginRight: '5px'}}
-        >
-          Show All Potential Tags
-        </span>
+        <div data-tooltip-id={'tooltip-toolbar-show-all'} style={{float: 'right'}}>
+          <span
+            style={{fontSize: '12px', fontWeight: 'bold', lineHeight: '29px', marginRight: '5px'}}
+          >
+            Show All Potential Tags
+          </span>
+
+          <input type="checkbox"
+                checked={this.props.showUnmapped}
+                onChange={this.toggleUnmapped}
+                style={{
+                  verticalAlign: 'middle',
+                  marginRight: '20px',
+                  cursor: 'pointer'
+                }} />
+
+        </div>
 
         <ReactTooltip
             id={'tooltip-toolbar-show-all'}
@@ -187,23 +186,31 @@ export default class AutoTagToolbar extends React.Component {
           Show all the tokens found in the filenames that do not match an existing tag
         </ReactTooltip>
 
-        <input type="checkbox"
-               checked={this.props.showUnmapped}
-               onChange={this.toggleUnmapped}
-               style={{
-                verticalAlign: 'middle',
-                marginRight: '20px',
-                cursor: 'pointer'
-              }} />
+        <div data-tooltip-id={'tooltip-toolbar-split-chars'} style={{float: 'right'}}>
+          <span
 
-        <input type="submit"
-               id="applyButton"
-               value="Apply" />
+            style={{fontSize: '12px', fontWeight: 'bold', lineHeight: '29px'}}
+          >
+            Split on&nbsp;
+          </span>
 
-        <input type="button"
-               onClick={this.refreshForm}
-               id="refreshForm"
-               value="Refresh" />
+          <input type="text"
+                size="5"
+                onChange={this.handleChangeSeparator}
+                value={this.props.separators}
+                style={{
+                  marginRight: '20px'
+                }} />
+        </div>
+
+        <ReactTooltip
+            id={'tooltip-toolbar-split-chars'}
+            place="bottom"
+            variant="dark"
+            offset={5}
+            className={'autotag_toolbar_tooltip'} >
+          Characters used to split the path and names to find relevant tags.
+        </ReactTooltip>
 
       </div>
     );
