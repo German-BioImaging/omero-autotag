@@ -11,6 +11,7 @@ export default class AutoTagToolbar extends React.Component {
     this.toggleUnmapped = this.toggleUnmapped.bind(this);
     this.handleChangeRequiredTokenCardinality = this.handleChangeRequiredTokenCardinality.bind(this);
     this.handleChangeSeparator = this.handleChangeSeparator.bind(this);
+    this.handleChangeTokenFilter = this.handleChangeTokenFilter.bind(this);
 
   }
 
@@ -29,6 +30,10 @@ export default class AutoTagToolbar extends React.Component {
 
   handleChangeSeparator(e) {
     this.props.handleChangeSeparator(e.target.value);
+  }
+
+  handleChangeTokenFilter(e) {
+    this.props.handleChangeTokenFilter(e.target.value);
   }
 
   render() {
@@ -81,6 +86,31 @@ export default class AutoTagToolbar extends React.Component {
             ? 'Select which object type to tag.'
             : 'The object type currently being tagged.'
           }
+        </ReactTooltip>
+
+        <div data-tooltip-id={'tooltip-toolbar-filter'} style={{float: 'left', marginLeft: '20px', marginRight: '20px', lineHeight: '29px'}}>
+          <span
+            style={{fontSize: '12px', fontWeight: 'bold', lineHeight: '29px'}}
+          >
+            Filter&nbsp;
+          </span>
+
+          <input type="text"
+                size="5"
+                onChange={this.handleChangeTokenFilter}
+                value={this.props.token_filter}
+                style={{
+                  marginLeft: '10px'
+                }} />
+        </div>
+
+        <ReactTooltip
+            id={'tooltip-toolbar-filter'}
+            place="bottom"
+            variant="dark"
+            offset={5}
+            className={'autotag_toolbar_tooltip'} >
+          Filter the list of potential tags to only show those that contain this string.
         </ReactTooltip>
 
         {

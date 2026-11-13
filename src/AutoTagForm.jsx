@@ -27,6 +27,7 @@ export default class AutoTagForm extends React.Component {
       requiredTokenCardinality: 2,
       maxTokenCardinality: 2,
       separators: " _./\\[]",
+      token_filter: "",
       tagValuesMap: new Map(),
       selectedItemType: null,  // The currently selected item type from dropdown
       availableTypes: [],      // Available item types for this selection
@@ -46,6 +47,7 @@ export default class AutoTagForm extends React.Component {
     this.toggleUnmapped = this.toggleUnmapped.bind(this);
     this.handleChangeRequiredTokenCardinality = this.handleChangeRequiredTokenCardinality.bind(this);
     this.handleChangeSeparator = this.handleChangeSeparator.bind(this);
+    this.handleChangeTokenFilter = this.handleChangeTokenFilter.bind(this);
     this.handleChangeItemType = this.handleChangeItemType.bind(this);
 
   }
@@ -754,7 +756,6 @@ export default class AutoTagForm extends React.Component {
 
     let items = this.state.items;
     let tagValuesMap = this.state.tagValuesMap;
-    tokenMap, unmappedTags;
 
     // Recompute the item tokens
     const res = this.initialize_tokens(items, tagValuesMap);
@@ -772,24 +773,38 @@ export default class AutoTagForm extends React.Component {
 
   }
 
+  handleChangeTokenFilter(value) {
+    this.setState({token_filter: value});
+  }
+
   filteredTokenMap() {
     // Filter out any tokens that do not meet the requirements
     // Requirements for inclusion:
     // 1) Matches an existing tag value
     // 2) Is present on required number of items
+    const filter = this.state.token_filter.toLowerCase();
     let tokenMap = new Map([...this.state.tokenMap].filter(kv => {
       let token = kv[1];
       return (
 
-        token.possible.size > 0 ||
-        (
-          token.count >= this.state.requiredTokenCardinality &&
-          this.tokenValueCheck(token.value)
+        token.value.toLowerCase().includes(filter) &&
+        (token.possible.size > 0 ||
+          (
+            token.count >= this.state.requiredTokenCardinality &&
+            this.tokenValueCheck(token.value)
+          )
         )
       )
 
     }));
     return tokenMap;
+  }
+
+  filteredUnmappedTags() {
+    const filter = this.state.token_filter.toLowerCase();
+    return new Set([...this.state.unmappedTags].filter(
+      tag => tag.value.toLowerCase().includes(filter)
+    ));
   }
 
   render() {
@@ -804,6 +819,8 @@ export default class AutoTagForm extends React.Component {
                         refreshForm={this.refreshForm}
                         separators={this.state.separators}
                         handleChangeSeparator={this.handleChangeSeparator}
+                        token_filter={this.state.token_filter}
+                        handleChangeTokenFilter={this.handleChangeTokenFilter}
                         itemType={this.state.selectedItemType}
                         availableTypes={this.state.availableTypes}
                         selectedItemType={this.state.selectedItemType}
@@ -812,7 +829,7 @@ export default class AutoTagForm extends React.Component {
 
         <AutoTagTable tokenMap={this.filteredTokenMap()}
                       items={this.state.items}
-                      unmappedTags={this.state.unmappedTags}
+                      unmappedTags={this.filteredUnmappedTags()}
                       showUnmapped={this.state.showUnmapped}
                       requiredTokenCardinality={this.state.requiredTokenCardinality}
                       cellCheckedChange={this.cellCheckedChange}
